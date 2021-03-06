@@ -1,0 +1,22 @@
+PODS:
+  - CocoaAsyncSocket (7.6.5)
+  - CocoaLumberjack/Core (3.7.0)
+  - CocoaLumberjack/Swift (3.7.0):
+    - CocoaLumberjack/Core
+
+DEPENDENCIES:
+  - CocoaAsyncSocket
+  - CocoaLumberjack/Swift
+
+SPEC REPOS:
+  trunk:
+    - CocoaAsyncSocket
+    - CocoaLumberjack
+
+SPEC CHECKSUMS:
+  CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
+  CocoaLumberjack: e8955b9d337ac307103b0a34fd141c32f27e53c5
+
+PODFILE CHECKSUM: dbf76fd177dae7b6124f11edf7f520ec6da9fa86
+
+COCOAPODS: 1.10.0

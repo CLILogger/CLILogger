@@ -1,0 +1,7 @@
+
+platform :osx, '10.15'
+
+target 'CLILoggerServer' do
+    pod 'CocoaLumberjack/Swift'
+    pod 'CocoaAsyncSocket'
+end
