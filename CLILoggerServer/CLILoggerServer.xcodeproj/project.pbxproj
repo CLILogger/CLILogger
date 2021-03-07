@@ -12,6 +12,8 @@
 		685A920A25F3EDB5002C6102 /* LoggingEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A920925F3EDB5002C6102 /* LoggingEntity.swift */; };
 		685A920D25F3EDCA002C6102 /* LoggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A920C25F3EDCA002C6102 /* LoggingService.swift */; };
 		685A921225F3F9F0002C6102 /* CocoaAsyncSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 685A921125F3F9F0002C6102 /* CocoaAsyncSocket */; };
+		688859DB25F5C553000E5890 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 688859DA25F5C553000E5890 /* CocoaLumberjackSwift */; };
+		688859DD25F5C553000E5890 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 688859DC25F5C553000E5890 /* CocoaLumberjack */; };
 		890B47A0966FB6D71C4067DB /* libPods-CLILoggerServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2451DC1179D65F23D507259A /* libPods-CLILoggerServer.a */; };
 /* End PBXBuildFile section */
 
@@ -44,6 +46,8 @@
 			files = (
 				685A91F525F3CB13002C6102 /* ArgumentParser in Frameworks */,
 				890B47A0966FB6D71C4067DB /* libPods-CLILoggerServer.a in Frameworks */,
+				688859DB25F5C553000E5890 /* CocoaLumberjackSwift in Frameworks */,
+				688859DD25F5C553000E5890 /* CocoaLumberjack in Frameworks */,
 				685A921225F3F9F0002C6102 /* CocoaAsyncSocket in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -116,6 +120,8 @@
 			packageProductDependencies = (
 				685A91F425F3CB13002C6102 /* ArgumentParser */,
 				685A921125F3F9F0002C6102 /* CocoaAsyncSocket */,
+				688859DA25F5C553000E5890 /* CocoaLumberjackSwift */,
+				688859DC25F5C553000E5890 /* CocoaLumberjack */,
 			);
 			productName = CLILoggerServer;
 			productReference = 685A91E225F34576002C6102 /* CLILoggerServer */;
@@ -147,6 +153,7 @@
 			packageReferences = (
 				685A91F325F3CB13002C6102 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
 				685A921025F3F9F0002C6102 /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */,
+				688859D925F5C553000E5890 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
 			);
 			productRefGroup = 685A91E325F34576002C6102 /* Products */;
 			projectDirPath = "";
@@ -377,6 +384,14 @@
 				minimumVersion = 7.6.5;
 			};
 		};
+		688859D925F5C553000E5890 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.7.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -389,6 +404,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 685A921025F3F9F0002C6102 /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */;
 			productName = CocoaAsyncSocket;
+		};
+		688859DA25F5C553000E5890 /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 688859D925F5C553000E5890 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
+		};
+		688859DC25F5C553000E5890 /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 688859D925F5C553000E5890 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -7,7 +7,7 @@
 
 import Foundation
 import CocoaAsyncSocket
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 class LoggingService: NSObject {
     private var netService: NetService!
