@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		68214A7625F5DB350028CCC9 /* CLILogger in Frameworks */ = {isa = PBXBuildFile; productRef = 68214A7525F5DB350028CCC9 /* CLILogger */; };
 		685A922425F5199B002C6102 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A922325F5199B002C6102 /* main.swift */; };
 		685A926325F51B42002C6102 /* LoggingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A926225F51B42002C6102 /* LoggingClient.swift */; };
 /* End PBXBuildFile section */
@@ -34,6 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				68214A7625F5DB350028CCC9 /* CLILogger in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +84,7 @@
 			);
 			name = CLILoggerClient;
 			packageProductDependencies = (
+				68214A7525F5DB350028CCC9 /* CLILogger */,
 			);
 			productName = CLILoggerClient;
 			productReference = 685A922025F5199B002C6102 /* CLILoggerClient */;
@@ -111,6 +114,7 @@
 			);
 			mainGroup = 685A921725F5199B002C6102;
 			packageReferences = (
+				68214A7425F5DB350028CCC9 /* XCRemoteSwiftPackageReference "CLILogger" */,
 			);
 			productRefGroup = 685A922125F5199B002C6102 /* Products */;
 			projectDirPath = "";
@@ -289,6 +293,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		68214A7425F5DB350028CCC9 /* XCRemoteSwiftPackageReference "CLILogger" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/xingheng/CLILogger.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		68214A7525F5DB350028CCC9 /* CLILogger */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 68214A7425F5DB350028CCC9 /* XCRemoteSwiftPackageReference "CLILogger" */;
+			productName = CLILogger;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 685A921825F5199B002C6102 /* Project object */;
 }

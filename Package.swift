@@ -20,6 +20,7 @@ let package = Package(
             dependencies: [
                 "CocoaAsyncSocket",
                 "CocoaLumberjack",
+                "CocoaLumberjackSwift",
             ]),
     ]
 )
