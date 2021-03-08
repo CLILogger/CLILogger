@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "CLILogger",
+        "repositoryURL": "https://github.com/xingheng/CLILogger",
+        "state": {
+          "branch": null,
+          "revision": "47ad43d5a703dfeadc4fc3a65831acca4fe9eefa",
+          "version": "0.1.0"
+        }
+      },
+      {
         "package": "CocoaAsyncSocket",
         "repositoryURL": "https://github.com/robbiehanson/CocoaAsyncSocket",
         "state": {
