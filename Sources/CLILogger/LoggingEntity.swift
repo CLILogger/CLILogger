@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 struct LoggingEntity {
     private var date: Date
