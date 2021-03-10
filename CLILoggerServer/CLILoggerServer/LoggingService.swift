@@ -7,7 +7,7 @@
 
 import Foundation
 import CocoaAsyncSocket
-import CocoaLumberjackSwift
+import CocoaLumberjack
 
 class LoggingService: NSObject {
     private var netService: NetService!
@@ -15,7 +15,9 @@ class LoggingService: NSObject {
     private var connectedSockets: [GCDAsyncSocket] = []
 
     static let shared = LoggingService()
-    var serviceName: String = "CLI Logging Service"
+    var serviceName: String = {
+        Host.current().name ?? "CLI Logging Service"
+    }()
     var port: UInt16 = 0
 
     override init() {

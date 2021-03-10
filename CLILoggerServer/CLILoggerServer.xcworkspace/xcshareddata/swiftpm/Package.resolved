@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "CLILogger",
-        "repositoryURL": "https://github.com/xingheng/CLILogger",
-        "state": {
-          "branch": null,
-          "revision": "47ad43d5a703dfeadc4fc3a65831acca4fe9eefa",
-          "version": "0.1.0"
-        }
-      },
-      {
         "package": "CocoaAsyncSocket",
         "repositoryURL": "https://github.com/robbiehanson/CocoaAsyncSocket",
         "state": {
@@ -20,30 +11,12 @@
         }
       },
       {
-        "package": "CocoaLumberjack",
-        "repositoryURL": "https://github.com/CocoaLumberjack/CocoaLumberjack",
-        "state": {
-          "branch": null,
-          "revision": "b06614d2373a9830c87817144d47ce654980a2d7",
-          "version": "3.7.0"
-        }
-      },
-      {
         "package": "swift-argument-parser",
         "repositoryURL": "https://github.com/apple/swift-argument-parser",
         "state": {
           "branch": null,
           "revision": "69ddee8c323ed468539e3b05e8c01e3d5a37bf6a",
           "version": "0.4.0"
-        }
-      },
-      {
-        "package": "swift-log",
-        "repositoryURL": "https://github.com/apple/swift-log.git",
-        "state": {
-          "branch": null,
-          "revision": "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
-          "version": "1.4.2"
         }
       }
     ]
