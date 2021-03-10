@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CocoaLumberjackSwift
+import CocoaLumberjack
 
 if (ProcessInfo().environment["TERM"] != nil) {
     // Terminal

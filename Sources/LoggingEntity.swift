@@ -14,7 +14,7 @@ public struct LoggingEntity {
     private var module: String?
     private var message: String
 
-    private(set) var tag: Int = 0
+    public private(set) var tag: Int = 0
     private static var index: Int = 0
 
     init(message: String, level: DDLogLevel = .debug) {

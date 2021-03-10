@@ -3,13 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		68214A7625F5DB350028CCC9 /* CLILogger in Frameworks */ = {isa = PBXBuildFile; productRef = 68214A7525F5DB350028CCC9 /* CLILogger */; };
 		685A922425F5199B002C6102 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A922325F5199B002C6102 /* main.swift */; };
 		685A926325F51B42002C6102 /* LoggingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A926225F51B42002C6102 /* LoggingClient.swift */; };
+		E1B37E4BA70105FC35848398 /* libPods-CLILoggerClient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6B14A869295BB42D87724DE /* libPods-CLILoggerClient.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,9 +25,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		30ABF19D973F5DDC3DC653C1 /* Pods-CLILoggerClient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CLILoggerClient.release.xcconfig"; path = "Target Support Files/Pods-CLILoggerClient/Pods-CLILoggerClient.release.xcconfig"; sourceTree = "<group>"; };
 		685A922025F5199B002C6102 /* CLILoggerClient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CLILoggerClient; sourceTree = BUILT_PRODUCTS_DIR; };
 		685A922325F5199B002C6102 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		685A926225F51B42002C6102 /* LoggingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingClient.swift; sourceTree = "<group>"; };
+		7EC0D9E19C914E6D8FCFCDD8 /* Pods-CLILoggerClient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CLILoggerClient.debug.xcconfig"; path = "Target Support Files/Pods-CLILoggerClient/Pods-CLILoggerClient.debug.xcconfig"; sourceTree = "<group>"; };
+		D6B14A869295BB42D87724DE /* libPods-CLILoggerClient.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CLILoggerClient.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,18 +38,29 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68214A7625F5DB350028CCC9 /* CLILogger in Frameworks */,
+				E1B37E4BA70105FC35848398 /* libPods-CLILoggerClient.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		583C8E3D2DB49275F3CED437 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				7EC0D9E19C914E6D8FCFCDD8 /* Pods-CLILoggerClient.debug.xcconfig */,
+				30ABF19D973F5DDC3DC653C1 /* Pods-CLILoggerClient.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		685A921725F5199B002C6102 = {
 			isa = PBXGroup;
 			children = (
 				685A922225F5199B002C6102 /* CLILoggerClient */,
 				685A922125F5199B002C6102 /* Products */,
+				583C8E3D2DB49275F3CED437 /* Pods */,
+				AD724D42D1CA4BFAA031D34D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -67,6 +81,14 @@
 			path = CLILoggerClient;
 			sourceTree = "<group>";
 		};
+		AD724D42D1CA4BFAA031D34D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D6B14A869295BB42D87724DE /* libPods-CLILoggerClient.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -74,6 +96,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 685A922725F5199B002C6102 /* Build configuration list for PBXNativeTarget "CLILoggerClient" */;
 			buildPhases = (
+				18B9C8AD2CCD125EED7CA9E7 /* [CP] Check Pods Manifest.lock */,
 				685A921C25F5199B002C6102 /* Sources */,
 				685A921D25F5199B002C6102 /* Frameworks */,
 				685A921E25F5199B002C6102 /* CopyFiles */,
@@ -84,7 +107,6 @@
 			);
 			name = CLILoggerClient;
 			packageProductDependencies = (
-				68214A7525F5DB350028CCC9 /* CLILogger */,
 			);
 			productName = CLILoggerClient;
 			productReference = 685A922025F5199B002C6102 /* CLILoggerClient */;
@@ -114,7 +136,6 @@
 			);
 			mainGroup = 685A921725F5199B002C6102;
 			packageReferences = (
-				68214A7425F5DB350028CCC9 /* XCRemoteSwiftPackageReference "CLILogger" */,
 			);
 			productRefGroup = 685A922125F5199B002C6102 /* Products */;
 			projectDirPath = "";
@@ -124,6 +145,31 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		18B9C8AD2CCD125EED7CA9E7 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-CLILoggerClient-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		685A921C25F5199B002C6102 /* Sources */ = {
@@ -255,6 +301,7 @@
 		};
 		685A922825F5199B002C6102 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7EC0D9E19C914E6D8FCFCDD8 /* Pods-CLILoggerClient.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -264,6 +311,7 @@
 		};
 		685A922925F5199B002C6102 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 30ABF19D973F5DDC3DC653C1 /* Pods-CLILoggerClient.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -293,25 +341,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		68214A7425F5DB350028CCC9 /* XCRemoteSwiftPackageReference "CLILogger" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/xingheng/CLILogger.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.3;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		68214A7525F5DB350028CCC9 /* CLILogger */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 68214A7425F5DB350028CCC9 /* XCRemoteSwiftPackageReference "CLILogger" */;
-			productName = CLILogger;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 685A921825F5199B002C6102 /* Project object */;
 }

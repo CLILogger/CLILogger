@@ -7,7 +7,8 @@
 
 import Foundation
 import CocoaAsyncSocket
-import CocoaLumberjackSwift
+import CocoaLumberjack
+import CLILogger
 
 class LoggingClient: NSObject {
     private var netServiceBrowser: NetServiceBrowser!
