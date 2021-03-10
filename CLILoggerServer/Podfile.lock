@@ -1,18 +1,33 @@
 PODS:
+  - CLILogger (0.1.0):
+    - CocoaAsyncSocket (~> 7.6.5)
+    - CocoaLumberjack (~> 3.7.0)
+  - CocoaAsyncSocket (7.6.5)
+  - CocoaLumberjack (3.7.0):
+    - CocoaLumberjack/Core (= 3.7.0)
   - CocoaLumberjack/Core (3.7.0)
   - CocoaLumberjack/Swift (3.7.0):
     - CocoaLumberjack/Core
 
 DEPENDENCIES:
+  - CLILogger (from `../`)
+  - CocoaAsyncSocket
   - CocoaLumberjack/Swift
 
 SPEC REPOS:
   trunk:
+    - CocoaAsyncSocket
     - CocoaLumberjack
 
+EXTERNAL SOURCES:
+  CLILogger:
+    :path: "../"
+
 SPEC CHECKSUMS:
+  CLILogger: 71136d21563d01b94003d7adb1bc38face627e2e
+  CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CocoaLumberjack: e8955b9d337ac307103b0a34fd141c32f27e53c5
 
-PODFILE CHECKSUM: e29622b90959d1bb03f935546ea79f19e7d28770
+PODFILE CHECKSUM: aafafa3218f6f916acd15fb17d63825066156ffa
 
 COCOAPODS: 1.10.0

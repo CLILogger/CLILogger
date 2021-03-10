@@ -1,8 +1,8 @@
 import Foundation
 
-struct LoggingServiceInfo {
-    static var domain = "local."
-    static var type = "_cli-logging-server._tcp."
+public struct LoggingServiceInfo {
+    public static var domain = "local."
+    public static var type = "_cli-logging-server._tcp."
 
-    static var timeout: TimeInterval = 5
+    public static var timeout: TimeInterval = 5
 }

@@ -2,5 +2,7 @@
 platform :osx, '10.15'
 
 target 'CLILoggerServer' do
-  pod 'CocoaLumberjack/Swift'
+    pod 'CocoaLumberjack/Swift', :modular_headers => true
+    pod 'CocoaAsyncSocket', :modular_headers => true
+    pod 'CLILogger', :path => '../'
 end

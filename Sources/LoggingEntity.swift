@@ -8,7 +8,7 @@
 import Foundation
 import CocoaLumberjack
 
-struct LoggingEntity {
+public struct LoggingEntity {
     private var date: Date
     private var level: DDLogLevel
     private var module: String?
@@ -42,7 +42,7 @@ extension LoggingEntity {
         }
     }
 
-    var bufferData: Data {
+    public var bufferData: Data {
         get {
             var dict: [String: Any] = [
                 JSONKey.date.name: date,
@@ -61,7 +61,7 @@ extension LoggingEntity {
         }
     }
 
-    init(data: Data) {
+    public init(data: Data) {
         let object = try! JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
         let dict = object as! [String: Any]
 
@@ -73,7 +73,7 @@ extension LoggingEntity {
 }
 
 extension Data {
-    static var terminator: Data {
+    public static var terminator: Data {
         get {
             return Data()
         }

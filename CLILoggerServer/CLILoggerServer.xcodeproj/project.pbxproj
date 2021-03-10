@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6850DE4725F8CE8200027CCB /* CocoaAsyncSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 6850DE4625F8CE8200027CCB /* CocoaAsyncSocket */; };
-		6850DE5425F8D10500027CCB /* CLILogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6850DE4F25F8D0C500027CCB /* CLILogger.swift */; };
-		6850DE5625F8D10A00027CCB /* LoggingEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6850DE4E25F8D0C500027CCB /* LoggingEntity.swift */; };
 		685A91E625F34576002C6102 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A91E525F34576002C6102 /* main.swift */; };
 		685A91F525F3CB13002C6102 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 685A91F425F3CB13002C6102 /* ArgumentParser */; };
 		685A920D25F3EDCA002C6102 /* LoggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A920C25F3EDCA002C6102 /* LoggingService.swift */; };
@@ -30,8 +27,6 @@
 
 /* Begin PBXFileReference section */
 		2451DC1179D65F23D507259A /* libPods-CLILoggerServer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CLILoggerServer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		6850DE4E25F8D0C500027CCB /* LoggingEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingEntity.swift; sourceTree = "<group>"; };
-		6850DE4F25F8D0C500027CCB /* CLILogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLILogger.swift; sourceTree = "<group>"; };
 		685A91E225F34576002C6102 /* CLILoggerServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CLILoggerServer; sourceTree = BUILT_PRODUCTS_DIR; };
 		685A91E525F34576002C6102 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		685A920C25F3EDCA002C6102 /* LoggingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingService.swift; sourceTree = "<group>"; };
@@ -46,7 +41,6 @@
 			files = (
 				685A91F525F3CB13002C6102 /* ArgumentParser in Frameworks */,
 				890B47A0966FB6D71C4067DB /* libPods-CLILoggerServer.a in Frameworks */,
-				6850DE4725F8CE8200027CCB /* CocoaAsyncSocket in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,20 +56,9 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		6850DE4D25F8D0C500027CCB /* Sources */ = {
-			isa = PBXGroup;
-			children = (
-				6850DE4E25F8D0C500027CCB /* LoggingEntity.swift */,
-				6850DE4F25F8D0C500027CCB /* CLILogger.swift */,
-			);
-			name = Sources;
-			path = ../Sources;
-			sourceTree = "<group>";
-		};
 		685A91D925F34576002C6102 = {
 			isa = PBXGroup;
 			children = (
-				6850DE4D25F8D0C500027CCB /* Sources */,
 				685A91E425F34576002C6102 /* CLILoggerServer */,
 				685A91E325F34576002C6102 /* Products */,
 				2308BDD391BC7492AD0144F5 /* Pods */,
@@ -127,7 +110,6 @@
 			name = CLILoggerServer;
 			packageProductDependencies = (
 				685A91F425F3CB13002C6102 /* ArgumentParser */,
-				6850DE4625F8CE8200027CCB /* CocoaAsyncSocket */,
 			);
 			productName = CLILoggerServer;
 			productReference = 685A91E225F34576002C6102 /* CLILoggerServer */;
@@ -158,7 +140,6 @@
 			mainGroup = 685A91D925F34576002C6102;
 			packageReferences = (
 				685A91F325F3CB13002C6102 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
-				6850DE4525F8CE8200027CCB /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */,
 			);
 			productRefGroup = 685A91E325F34576002C6102 /* Products */;
 			projectDirPath = "";
@@ -200,8 +181,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				685A91E625F34576002C6102 /* main.swift in Sources */,
-				6850DE5425F8D10500027CCB /* CLILogger.swift in Sources */,
-				6850DE5625F8D10A00027CCB /* LoggingEntity.swift in Sources */,
 				685A920D25F3EDCA002C6102 /* LoggingService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -374,14 +353,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		6850DE4525F8CE8200027CCB /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/robbiehanson/CocoaAsyncSocket";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.6.5;
-			};
-		};
 		685A91F325F3CB13002C6102 /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-argument-parser";
@@ -393,11 +364,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		6850DE4625F8CE8200027CCB /* CocoaAsyncSocket */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6850DE4525F8CE8200027CCB /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */;
-			productName = CocoaAsyncSocket;
-		};
 		685A91F425F3CB13002C6102 /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 685A91F325F3CB13002C6102 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;

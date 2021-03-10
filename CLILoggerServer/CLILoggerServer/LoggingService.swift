@@ -8,6 +8,7 @@
 import Foundation
 import CocoaAsyncSocket
 import CocoaLumberjack
+import CLILogger
 
 class LoggingService: NSObject {
     private var netService: NetService!
