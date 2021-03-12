@@ -16,7 +16,11 @@ if (ProcessInfo().environment["TERM"] != nil) {
     DDLog.add(DDOSLogger.sharedInstance)
 }
 
+let client = LoggingClient()
 
-DDLogInfo("Hello, World!")
+client.searchService()
 
+client.log("This is \(Host.current().name ?? "a guest")")
+client.log("See", "you", "next", "time!")
 
+RunLoop.main.run()

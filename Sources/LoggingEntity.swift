@@ -9,21 +9,22 @@ import Foundation
 import CocoaLumberjack
 
 public struct LoggingEntity {
-    private var date: Date
-    private var level: DDLogLevel
-    private var module: String?
-    private var message: String
+    public private(set) var date: Date
+    public private(set) var level: DDLogLevel
+    public private(set) var module: String?
+    public private(set) var message: String
 
     public private(set) var tag: Int = 0
     private static var index: Int = 0
 
-    init(message: String, level: DDLogLevel = .debug) {
+    public init(message: String, level: DDLogLevel = .debug, module: String? = nil) {
         defer {
             Self.index += 1
         }
 
         self.message = message
         self.level = level
+        self.module = module
         self.date = Date()
         self.tag = Self.index
     }
@@ -31,7 +32,7 @@ public struct LoggingEntity {
 
 extension LoggingEntity {
 
-    enum JSONKey: String {
+    private enum JSONKey: String {
         case date
         case level
         case module
@@ -45,8 +46,8 @@ extension LoggingEntity {
     public var bufferData: Data {
         get {
             var dict: [String: Any] = [
-                JSONKey.date.name: date,
-                JSONKey.level.name: level,
+                JSONKey.date.name: date.timeIntervalSince1970,
+                JSONKey.level.name: level.rawValue,
                 JSONKey.message.name: message,
             ]
 
@@ -65,8 +66,8 @@ extension LoggingEntity {
         let object = try! JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
         let dict = object as! [String: Any]
 
-        self.date = dict[JSONKey.date.name] as! Date
-        self.level = dict[JSONKey.level.name] as! DDLogLevel
+        self.date = Date(timeIntervalSince1970: dict[JSONKey.date.name] as! TimeInterval)
+        self.level = DDLogLevel(rawValue: dict[JSONKey.level.name] as! UInt) ?? .off
         self.module = dict[JSONKey.module.name] as! String?
         self.message = dict[JSONKey.message.name] as! String
     }
@@ -75,7 +76,9 @@ extension LoggingEntity {
 extension Data {
     public static var terminator: Data {
         get {
-            return Data()
+            // https://stackoverflow.com/a/24850996/1677041
+            let bytes = [0x0D, 0x0A, 0x0B, 0x0A]
+            return Data(bytes: bytes, count: bytes.count)
         }
     }
 }

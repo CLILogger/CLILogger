@@ -5,4 +5,5 @@ target 'CLILoggerServer' do
     pod 'CocoaLumberjack/Swift', :modular_headers => true
     pod 'CocoaAsyncSocket', :modular_headers => true
     pod 'CLILogger', :path => '../'
+    pod 'RainbowSwift', '~> 3.2.0'
 end

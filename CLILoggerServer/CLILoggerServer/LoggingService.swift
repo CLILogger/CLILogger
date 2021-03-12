@@ -9,21 +9,53 @@ import Foundation
 import CocoaAsyncSocket
 import CocoaLumberjack
 import CLILogger
+import RainbowSwift
 
 class LoggingService: NSObject {
+    public static let shared = LoggingService()
+    public var serviceName: String = Host.current().name ?? "CLI Logging Service"
+    public var port: UInt16 = 0
+
     private var netService: NetService!
     private var asyncSocket: GCDAsyncSocket!
     private var connectedSockets: [GCDAsyncSocket] = []
 
-    static let shared = LoggingService()
-    var serviceName: String = {
-        Host.current().name ?? "CLI Logging Service"
-    }()
-    var port: UInt16 = 0
+    private var timer: DispatchSourceTimer?
+    private var reading: Bool = false
+    private var dataQueue = DispatchQueue(label: "logging.serial.data.queue")
 
-    override init() {
+    override private init() {
         super.init()
         self.asyncSocket = GCDAsyncSocket(delegate: self, delegateQueue: DispatchQueue.main)
+
+        timer = DispatchSource.makeTimerSource(queue: dataQueue)
+
+        timer?.setEventHandler { [unowned self] in
+            if self.reading && self.connectedSockets.count <= 0 {
+                return
+            }
+
+            self.reading = true
+            for socket in self.connectedSockets {
+                // timeout -1 means waits forever, any other explict positive values
+                // will make the socket get disconnected after timeout.
+                socket.readData(to: Data.terminator, withTimeout: -1, tag: 0)
+            }
+            self.reading = false
+        }
+
+        timer?.schedule(deadline: .now(), repeating: .milliseconds(1), leeway: .microseconds(500))
+        timer?.resume()
+    }
+
+    deinit {
+        netService.stop()
+        netService = nil
+        asyncSocket.disconnect()
+        asyncSocket = nil
+        connectedSockets.removeAll()
+        timer?.cancel()
+        timer = nil
     }
 
     func publish() {
@@ -47,36 +79,29 @@ class LoggingService: NSObject {
             DDLogError("error: \(err)")
         }
     }
-
-    private func readDataFromClients() {
-        for socket in connectedSockets {
-            socket.readData(to: Data.terminator, withTimeout: -1, tag: 0)
-        }
-    }
 }
 
 extension LoggingService: NetServiceDelegate {
 
     func netServiceDidPublish(_ sender: NetService) {
         DDLogInfo("\(#function)")
-        DDLogInfo("Publish service '\(sender.name)' on port \(sender.port)")
+        DDLogInfo("Publish service \(sender.name) on port \(sender.port)")
     }
 
-    func netService(_ sender: NetService, didNotPublish errorDict: [String : NSNumber]) {
-        DDLogWarn("\(#function)")
+    func netService(_ sender: NetService, didNotPublish errorDict: [String: NSNumber]) {
+        DDLogWarn("\(#function), error: \(errorDict)")
     }
 
-    func netService(_ sender: NetService, didNotResolve errorDict: [String : NSNumber]) {
-        DDLogWarn("\(#function)")
+    func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
+        DDLogWarn("\(#function), error: \(errorDict)")
     }
 }
 
 extension LoggingService: GCDAsyncSocketDelegate {
 
     func socket(_ sock: GCDAsyncSocket, didAcceptNewSocket newSocket: GCDAsyncSocket) {
-        DDLogInfo("\(#function)")
+        DDLogInfo("\(#function): \(newSocket.connectedHost ?? "Unknown")")
         connectedSockets.append(newSocket)
-        readDataFromClients()
     }
 
     func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
@@ -89,12 +114,64 @@ extension LoggingService: GCDAsyncSocketDelegate {
     func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
         DDLogInfo("\(#function)")
 
-        let endIndex = data.endIndex - Data.terminator.endIndex
+        let endIndex = data.endIndex - Data.terminator.endIndex + 1
         let validData = data.subdata(in: 0..<data.index(before: endIndex))
         let entity = LoggingEntity(data: validData)
 
-        DDLogDebug("entity: \(entity)")
-        readDataFromClients()
+        print(entity.prettyFormatMessage())
     }
 }
 
+extension LoggingEntity {
+    static var formatter: DateFormatter {
+        let formatter = DateFormatter()
+
+        formatter.dateFormat = "HH:mm:ss"
+        return formatter
+    }
+
+    public func prettyFormatMessage() -> String {
+        var result = Self.formatter.string(from: date)
+        var strLevel = ""
+        var color = Color.default
+
+        switch level {
+        case .error:
+            strLevel = "ERROR"
+            color = .red
+            break
+
+        case .warning:
+            strLevel = "WARNING"
+            color = .yellow
+            break
+
+        case .info:
+            strLevel = "INFO"
+            color = .lightWhite
+            break
+
+        case .debug:
+            strLevel = "DEBUG"
+            color = .green
+            break
+
+        case .verbose:
+            strLevel = "VERBOSE"
+            color = .lightBlack
+            break
+
+        default:
+            break
+        }
+
+        result += " \(strLevel.padding(toLength: 8, withPad: " ", startingAt: 0))"
+
+        if let mod = module {
+            result += " \(mod)"
+        }
+
+        result += " \(message)"
+        return result.applyingColor(color)
+    }
+}

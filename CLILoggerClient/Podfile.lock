@@ -24,7 +24,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  CLILogger: 71136d21563d01b94003d7adb1bc38face627e2e
+  CLILogger: 54effa34b0b6762c244ea0ec19d6ec6461fb83c9
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CocoaLumberjack: e8955b9d337ac307103b0a34fd141c32f27e53c5
 
