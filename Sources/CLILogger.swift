@@ -1,6 +1,7 @@
 import Foundation
 
-public struct LoggingServiceInfo {
+@objcMembers
+public class LoggingServiceInfo {
     public private(set) static var domain = "local."
     public private(set) static var type = "_cli-logging-server._tcp."
 

@@ -8,9 +8,9 @@
 import Foundation
 import CocoaAsyncSocket
 import CocoaLumberjack
-import CLILogger
 
-class LoggingClient: NSObject {
+@objcMembers
+public class LoggingClient: NSObject {
     private var netServiceBrowser: NetServiceBrowser?
     private var allAvailableServices: [NetService] = []
     private var selectedServiceIndex: Int = 0 {
@@ -41,7 +41,7 @@ class LoggingClient: NSObject {
     private var pendingMessages: [LoggingEntity] = []
     private var dataQueue = DispatchQueue(label: "logging.serial.data.queue")
 
-    static var shared = LoggingClient()
+    public static var shared = LoggingClient()
 
     /// This method must be run in main thread because of NetServiceBrowser.
     public func searchService() {
@@ -81,13 +81,13 @@ class LoggingClient: NSObject {
                 try asyncSocket?.connect(toAddress: address, withTimeout: LoggingServiceInfo.timeout)
                 done = true
             } catch let error {
-                DDLogError("Unable to connect with error: \(error)")
+                print("Unable to connect with error: \(error)")
                 done = false
             }
         }
 
         if !done {
-            DDLogWarn("Unable to connect to any resolved addresses!")
+            print("Unable to connect to any resolved addresses!")
             resetCurrentService()
             searchService()
         }
@@ -118,7 +118,7 @@ class LoggingClient: NSObject {
     }
 
     private func askForChooseService(completion: (Int) -> Void) {
-        DDLogVerbose("\(#function)")
+        print("\(#function)")
 
         let count = allAvailableServices.count
 
@@ -157,8 +157,8 @@ class LoggingClient: NSObject {
 
 extension LoggingClient: NetServiceBrowserDelegate {
 
-    func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
-        DDLogVerbose("\(#function), found service \(service.name), has more: \(moreComing)")
+    public func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
+        print("\(#function), found service \(service.name), has more: \(moreComing)")
 
         allAvailableServices.append(service)
 
@@ -169,12 +169,12 @@ extension LoggingClient: NetServiceBrowserDelegate {
         }
     }
 
-    func netServiceBrowser(_ browser: NetServiceBrowser, didNotSearch errorDict: [String : NSNumber]) {
-        DDLogError("\(#function), error: \(errorDict)")
+    public func netServiceBrowser(_ browser: NetServiceBrowser, didNotSearch errorDict: [String : NSNumber]) {
+        print("\(#function), error: \(errorDict)")
     }
 
-    func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
-        DDLogInfo("\(#function), service: \(service)")
+    public func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
+        print("\(#function), service: \(service)")
 
         if service == selectService {
             resetCurrentService()
@@ -182,15 +182,15 @@ extension LoggingClient: NetServiceBrowserDelegate {
         }
     }
 
-    func netServiceBrowserDidStopSearch(_ browser: NetServiceBrowser) {
-        DDLogInfo("\(#function)")
+    public func netServiceBrowserDidStopSearch(_ browser: NetServiceBrowser) {
+        print("\(#function)")
     }
 }
 
 extension LoggingClient: NetServiceDelegate {
 
-    func netServiceDidResolveAddress(_ sender: NetService) {
-        DDLogDebug("\(#function)")
+    public func netServiceDidResolveAddress(_ sender: NetService) {
+        print("\(#function)")
 
         if serverAddresses.isEmpty {
             serverAddresses = sender.addresses!
@@ -202,27 +202,26 @@ extension LoggingClient: NetServiceDelegate {
         }
     }
 
-    func netService(_ sender: NetService, didNotResolve errorDict: [String : NSNumber]) {
-        DDLogError("\(#function), error: \(errorDict)")
+    public func netService(_ sender: NetService, didNotResolve errorDict: [String : NSNumber]) {
+        print("\(#function), error: \(errorDict)")
         connectToNextAddress()
     }
 }
 
 extension LoggingClient: GCDAsyncSocketDelegate {
 
-    func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
-        DDLogInfo("\(#function), host: \(host), port: \(port)")
+    public func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
+        print("\(#function), host: \(host), port: \(port)")
         connected = true
     }
 
-    func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
-        DDLogInfo("\(#function), error: \(err as Any)")
+    public func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
+        print("\(#function), error: \(err as Any)")
         connected = false
     }
 
-    func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
+    public func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
         if let index = pendingMessages.firstIndex(where: {$0.tag == tag}) {
-            DDLogVerbose("Write data \(tag) successfully!")
             pendingMessages.remove(at: index)
         }
 

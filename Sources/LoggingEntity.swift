@@ -8,16 +8,25 @@
 import Foundation
 import CocoaLumberjack
 
-public struct LoggingEntity {
-    public private(set) var date: Date
-    public private(set) var level: DDLogLevel
+@objcMembers
+public class LoggingEntity: NSObject {
+    public private(set) var date: Date!
+    public private(set) var level: DDLogLevel!
     public private(set) var module: String?
-    public private(set) var message: String
+    public private(set) var message: String!
 
     public private(set) var tag: Int = 0
     private static var index: Int = 0
 
-    public init(message: String, level: DDLogLevel = .debug, module: String? = nil) {
+    fileprivate override init() {
+        self.date = Date()
+        self.level = .debug
+
+        super.init()
+    }
+
+    public convenience init(message: String, level: DDLogLevel = .debug, module: String? = nil) {
+        self.init()
         defer {
             Self.index += 1
         }
@@ -25,7 +34,6 @@ public struct LoggingEntity {
         self.message = message
         self.level = level
         self.module = module
-        self.date = Date()
         self.tag = Self.index
     }
 }
@@ -62,9 +70,11 @@ extension LoggingEntity {
         }
     }
 
-    public init(data: Data) {
+    public convenience init(data: Data) {
         let object = try! JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
         let dict = object as! [String: Any]
+
+        self.init()
 
         self.date = Date(timeIntervalSince1970: dict[JSONKey.date.name] as! TimeInterval)
         self.level = DDLogLevel(rawValue: dict[JSONKey.level.name] as! UInt) ?? .off
