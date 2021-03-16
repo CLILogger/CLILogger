@@ -1,4 +1,5 @@
 import Foundation
+import CocoaLumberjack
 
 @objcMembers
 public class LoggingServiceInfo {
@@ -7,6 +8,6 @@ public class LoggingServiceInfo {
 
     public static var timeout: TimeInterval = 5
 
-    public typealias InternalLogHandler = ((String) -> Void)
+    public typealias InternalLogHandler = (DDLogLevel, String) -> Void
     public static var logHandler: InternalLogHandler?
 }

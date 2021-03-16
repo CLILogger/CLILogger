@@ -58,7 +58,7 @@ class LoggingService: NSObject {
         timer = nil
     }
 
-    func publish() {
+    public func publish() {
         do {
             try asyncSocket.accept(onPort: port)
 
@@ -78,6 +78,14 @@ class LoggingService: NSObject {
         } catch let err {
             DDLogError("error: \(err)")
         }
+    }
+
+    private func log(level: DDLogLevel, activity: String) {
+        guard let handler = LoggingServiceInfo.logHandler else {
+            return
+        }
+
+        handler(level, activity)
     }
 }
 
@@ -171,7 +179,7 @@ extension LoggingEntity {
             result += " \(mod)"
         }
 
-        result += " \(message)"
+        result += " \(message!)"
         return result.applyingColor(color)
     }
 }
