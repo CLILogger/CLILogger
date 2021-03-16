@@ -69,6 +69,14 @@ public class LoggingClient: NSObject {
         pendingMessages.append(entity)
     }
 
+    private func log(activity: String) {
+        guard let handler = LoggingServiceInfo.logHandler else {
+            return
+        }
+
+        handler(activity)
+    }
+
     private func connectToNextAddress() {
         var done = false
 
@@ -94,7 +102,7 @@ public class LoggingClient: NSObject {
     }
 
     private func dispatchPendingMessages() {
-        // DDLogVerbose("dispatching...\(pendingMessages.count) message(s) pending.")
+        // log(activity: "dispatching...\(pendingMessages.count) message(s) pending.")
 
         if pendingMessages.isEmpty {
             return
@@ -111,6 +119,8 @@ public class LoggingClient: NSObject {
     }
 
     private func resetCurrentService() {
+        log(activity: "Resetting service...")
+
         allAvailableServices.removeAll()
         selectedServiceIndex = 0
         serverAddresses.removeAll()
@@ -118,7 +128,7 @@ public class LoggingClient: NSObject {
     }
 
     private func askForChooseService(completion: (Int) -> Void) {
-        print("\(#function)")
+        log(activity: "\(#function)")
 
         let count = allAvailableServices.count
 
@@ -158,7 +168,7 @@ public class LoggingClient: NSObject {
 extension LoggingClient: NetServiceBrowserDelegate {
 
     public func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
-        print("\(#function), found service \(service.name), has more: \(moreComing)")
+        log(activity: "\(#function), found service \(service.name), has more: \(moreComing)")
 
         allAvailableServices.append(service)
 
@@ -170,11 +180,11 @@ extension LoggingClient: NetServiceBrowserDelegate {
     }
 
     public func netServiceBrowser(_ browser: NetServiceBrowser, didNotSearch errorDict: [String : NSNumber]) {
-        print("\(#function), error: \(errorDict)")
+        log(activity: "\(#function), error: \(errorDict)")
     }
 
     public func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
-        print("\(#function), service: \(service)")
+        log(activity: "\(#function), service: \(service)")
 
         if service == selectService {
             resetCurrentService()
@@ -183,14 +193,14 @@ extension LoggingClient: NetServiceBrowserDelegate {
     }
 
     public func netServiceBrowserDidStopSearch(_ browser: NetServiceBrowser) {
-        print("\(#function)")
+        log(activity: "\(#function)")
     }
 }
 
 extension LoggingClient: NetServiceDelegate {
 
     public func netServiceDidResolveAddress(_ sender: NetService) {
-        print("\(#function)")
+        log(activity: "\(#function)")
 
         if serverAddresses.isEmpty {
             serverAddresses = sender.addresses!
@@ -203,7 +213,7 @@ extension LoggingClient: NetServiceDelegate {
     }
 
     public func netService(_ sender: NetService, didNotResolve errorDict: [String : NSNumber]) {
-        print("\(#function), error: \(errorDict)")
+        log(activity: "\(#function), error: \(errorDict)")
         connectToNextAddress()
     }
 }
@@ -211,12 +221,12 @@ extension LoggingClient: NetServiceDelegate {
 extension LoggingClient: GCDAsyncSocketDelegate {
 
     public func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
-        print("\(#function), host: \(host), port: \(port)")
+        log(activity: "\(#function), host: \(host), port: \(port)")
         connected = true
     }
 
     public func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
-        print("\(#function), error: \(err as Any)")
+        log(activity: "\(#function), error: \(err as Any)")
         connected = false
     }
 

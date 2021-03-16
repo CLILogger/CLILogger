@@ -56,7 +56,7 @@ extension LoggingEntity {
             var dict: [String: Any] = [
                 JSONKey.date.name: date.timeIntervalSince1970,
                 JSONKey.level.name: level.rawValue,
-                JSONKey.message.name: message,
+                JSONKey.message.name: message!,
             ]
 
             if let mod = module {
@@ -79,7 +79,7 @@ extension LoggingEntity {
         self.date = Date(timeIntervalSince1970: dict[JSONKey.date.name] as! TimeInterval)
         self.level = DDLogLevel(rawValue: dict[JSONKey.level.name] as! UInt) ?? .off
         self.module = dict[JSONKey.module.name] as! String?
-        self.message = dict[JSONKey.message.name] as! String
+        self.message = dict[JSONKey.message.name] as? String
     }
 }
 
