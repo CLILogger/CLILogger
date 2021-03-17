@@ -92,41 +92,53 @@ class CLILoggingService: NSObject {
 extension CLILoggingService: NetServiceDelegate {
 
     func netServiceDidPublish(_ sender: NetService) {
-        DDLogInfo("\(#function)")
-        DDLogInfo("Publish service \(sender.name) on port \(sender.port)")
+        DDLogVerbose("\(#function)")
+        DDLogInfo("Publish service \(sender.name) on port \(sender.port), info: type=\(sender.type) domain=\(sender.domain)")
     }
 
     func netService(_ sender: NetService, didNotPublish errorDict: [String: NSNumber]) {
-        DDLogWarn("\(#function), error: \(errorDict)")
+        DDLogVerbose("\(#function), error: \(errorDict)")
     }
 
     func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
-        DDLogWarn("\(#function), error: \(errorDict)")
+        DDLogVerbose("\(#function), error: \(errorDict)")
     }
 }
 
 extension CLILoggingService: GCDAsyncSocketDelegate {
 
     func socket(_ sock: GCDAsyncSocket, didAcceptNewSocket newSocket: GCDAsyncSocket) {
-        DDLogInfo("\(#function): \(newSocket.connectedHost ?? "Unknown")")
+        // Save the incoming host name as its alias in its lifecycle.
+        newSocket.name = newSocket.connectedHost ?? "Unknown"
+
+        DDLogInfo("\(newSocket.name!) connected!")
         connectedSockets.append(newSocket)
     }
 
     func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
-        DDLogError("\(#function)")
+        DDLogInfo("\(sock.name!) disconnected!")
         connectedSockets.removeAll { (socket) -> Bool in
             sock == socket
         }
     }
 
     func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
-        DDLogInfo("\(#function)")
+        DDLogVerbose("\(#function)")
 
         let endIndex = data.endIndex - Data.terminator.endIndex + 1
         let validData = data.subdata(in: 0..<data.index(before: endIndex))
         let entity = CLILoggingEntity(data: validData)
 
         print(entity.prettyFormatMessage())
+    }
+}
+
+extension GCDAsyncSocket {
+
+    // Bind the name info to `userData`.
+    fileprivate var name: String? {
+        get { return userData as? String }
+        set { userData = newValue }
     }
 }
 
@@ -143,7 +155,7 @@ extension CLILoggingEntity {
         var strLevel = ""
         var color = Color.default
 
-        switch level {
+        switch flag! {
         case .error:
             strLevel = "ERROR"
             color = .red
@@ -166,7 +178,7 @@ extension CLILoggingEntity {
 
         case .verbose:
             strLevel = "VERBOSE"
-            color = .lightBlack
+            color = .black
             break
 
         default:

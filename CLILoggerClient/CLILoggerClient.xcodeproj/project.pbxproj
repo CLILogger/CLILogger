@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		685A922425F5199B002C6102 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A922325F5199B002C6102 /* main.swift */; };
-		685A926325F51B42002C6102 /* LoggingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A926225F51B42002C6102 /* LoggingClient.swift */; };
 		E1B37E4BA70105FC35848398 /* libPods-CLILoggerClient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6B14A869295BB42D87724DE /* libPods-CLILoggerClient.a */; };
 /* End PBXBuildFile section */
 
@@ -28,7 +27,6 @@
 		30ABF19D973F5DDC3DC653C1 /* Pods-CLILoggerClient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CLILoggerClient.release.xcconfig"; path = "Target Support Files/Pods-CLILoggerClient/Pods-CLILoggerClient.release.xcconfig"; sourceTree = "<group>"; };
 		685A922025F5199B002C6102 /* CLILoggerClient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CLILoggerClient; sourceTree = BUILT_PRODUCTS_DIR; };
 		685A922325F5199B002C6102 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		685A926225F51B42002C6102 /* LoggingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingClient.swift; sourceTree = "<group>"; };
 		7EC0D9E19C914E6D8FCFCDD8 /* Pods-CLILoggerClient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CLILoggerClient.debug.xcconfig"; path = "Target Support Files/Pods-CLILoggerClient/Pods-CLILoggerClient.debug.xcconfig"; sourceTree = "<group>"; };
 		D6B14A869295BB42D87724DE /* libPods-CLILoggerClient.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CLILoggerClient.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -76,7 +74,6 @@
 			isa = PBXGroup;
 			children = (
 				685A922325F5199B002C6102 /* main.swift */,
-				685A926225F51B42002C6102 /* LoggingClient.swift */,
 			);
 			path = CLILoggerClient;
 			sourceTree = "<group>";
@@ -177,7 +174,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				685A922425F5199B002C6102 /* main.swift in Sources */,
-				685A926325F51B42002C6102 /* LoggingClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -10,14 +10,6 @@ import ArgumentParser
 import CocoaLumberjack
 import CLILogger
 
-if (ProcessInfo().environment["TERM"] != nil) {
-    // Terminal
-    DDLog.add(DDTTYLogger.sharedInstance!)
-} else {
-    // Xcode Console
-    DDLog.add(DDOSLogger.sharedInstance)
-}
-
 var config = Configuration()
 
 if !config.load(from: Configuration.defaultConfigFile) {
@@ -25,8 +17,18 @@ if !config.load(from: Configuration.defaultConfigFile) {
     config.saveToDefaultFileIfNecessary()
 }
 
+func SetupInternalLogger(level: DDLogLevel) {
+    if (ProcessInfo().environment["TERM"] != nil) {
+        // Terminal
+        DDLog.add(DDTTYLogger.sharedInstance!, with: level)
+    } else {
+        // Xcode Console
+        DDLog.add(DDOSLogger.sharedInstance, with: level)
+    }
+}
+
 struct CLILogger: ParsableCommand {
-    @Flag(help: "Show verbose logging or not.")
+    @Flag(help: "Show verbose logging of internal service or not.")
     var verbose = false
 
     @Argument(help: "Service name.")
@@ -36,34 +38,7 @@ struct CLILogger: ParsableCommand {
     var port: UInt16?
 
     mutating func run() throws {
-        DDLog.setLevel(verbose ? .verbose : .info, for: CLILoggingService.self)
-
-        CLILoggingServiceInfo.logHandler = { level, message in
-            switch level {
-            case .error:
-                DDLogError(message)
-                break
-
-            case .warning:
-                DDLogWarn(message)
-                break
-
-            case .info:
-                DDLogInfo(message)
-                break
-
-            case .debug:
-                DDLogDebug(message)
-                break
-
-            case .verbose:
-                DDLogVerbose(message)
-                break
-
-            default:
-                break
-            }
-        }
+        SetupInternalLogger(level: verbose ? .verbose : .info)
 
         let service = CLILoggingService.shared
 

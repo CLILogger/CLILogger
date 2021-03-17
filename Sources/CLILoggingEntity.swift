@@ -11,7 +11,7 @@ import CocoaLumberjack
 @objcMembers
 public class CLILoggingEntity: NSObject {
     public private(set) var date: Date!
-    public private(set) var level: DDLogLevel!
+    public private(set) var flag: DDLogFlag!
     public private(set) var module: String?
     public private(set) var message: String!
 
@@ -20,19 +20,19 @@ public class CLILoggingEntity: NSObject {
 
     fileprivate override init() {
         self.date = Date()
-        self.level = .debug
+        self.flag = .verbose
 
         super.init()
     }
 
-    public convenience init(message: String, level: DDLogLevel = .debug, module: String? = nil) {
+    public convenience init(message: String, flag: DDLogFlag = .verbose, module: String? = nil) {
         self.init()
         defer {
             Self.index += 1
         }
 
         self.message = message
-        self.level = level
+        self.flag = flag
         self.module = module
         self.tag = Self.index
     }
@@ -42,7 +42,7 @@ extension CLILoggingEntity {
 
     private enum JSONKey: String {
         case date
-        case level
+        case flag
         case module
         case message
 
@@ -55,7 +55,7 @@ extension CLILoggingEntity {
         get {
             var dict: [String: Any] = [
                 JSONKey.date.name: date.timeIntervalSince1970,
-                JSONKey.level.name: level.rawValue,
+                JSONKey.flag.name: flag.rawValue,
                 JSONKey.message.name: message!,
             ]
 
@@ -77,7 +77,7 @@ extension CLILoggingEntity {
         self.init()
 
         self.date = Date(timeIntervalSince1970: dict[JSONKey.date.name] as! TimeInterval)
-        self.level = DDLogLevel(rawValue: dict[JSONKey.level.name] as! UInt) ?? .off
+        self.flag = DDLogFlag(rawValue: dict[JSONKey.flag.name] as! UInt)
         self.module = dict[JSONKey.module.name] as! String?
         self.message = dict[JSONKey.message.name] as? String
     }

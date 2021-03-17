@@ -7,6 +7,7 @@
 
 import Foundation
 import CocoaLumberjack
+import CLILogger
 
 if (ProcessInfo().environment["TERM"] != nil) {
     // Terminal
@@ -16,7 +17,7 @@ if (ProcessInfo().environment["TERM"] != nil) {
     DDLog.add(DDOSLogger.sharedInstance)
 }
 
-let client = LoggingClient()
+let client = CLILoggingClient()
 
 client.searchService()
 

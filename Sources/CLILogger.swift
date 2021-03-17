@@ -2,7 +2,7 @@ import Foundation
 import CocoaLumberjack
 
 @objcMembers
-public class CLILoggingServiceInfo {
+public class CLILoggingServiceInfo: NSObject {
     public private(set) static var domain = "local."
     public private(set) static var type = "_cli-logger-server._tcp."
 

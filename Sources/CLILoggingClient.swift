@@ -9,6 +9,8 @@ import Foundation
 import CocoaAsyncSocket
 import CocoaLumberjack
 
+// MARK: - CLILoggingClient
+
 @objcMembers
 public class CLILoggingClient: NSObject {
     private var netServiceBrowser: NetServiceBrowser?
@@ -43,8 +45,8 @@ public class CLILoggingClient: NSObject {
 
     public static var shared = CLILoggingClient()
 
-    /// This method must be run in main thread because of NetServiceBrowser.
     public func searchService() {
+        // This method must be run in main thread because of NetServiceBrowser.
         DispatchQueue.main.async {
             if let browser = self.netServiceBrowser {
                 browser.stop()
@@ -56,17 +58,18 @@ public class CLILoggingClient: NSObject {
         }
     }
 
-    public func log(_ args: String..., level: DDLogLevel = .debug, module: String? = nil) {
-        log(args, level: level, module:module)
+    public func log(_ args: String..., flag: DDLogFlag = .verbose, module: String? = nil) {
+        log(args, flag: flag, module:module)
     }
 
-    public func log(_ args: [String], level: DDLogLevel = .debug, module: String? = nil) {
+    public func log(_ args: [String], flag: DDLogFlag = .verbose, module: String? = nil) {
         let msg = args.joined(separator: " ")
-        log(entity: CLILoggingEntity(message: msg, level: level, module: module))
+        log(entity: CLILoggingEntity(message: msg, flag: flag, module: module))
     }
 
     public func log(entity: CLILoggingEntity) {
         pendingMessages.append(entity)
+        dispatchPendingMessages()
     }
 
     private func log(_ level: DDLogLevel, activity: String) {
@@ -165,6 +168,8 @@ public class CLILoggingClient: NSObject {
     }
 }
 
+// MARK: - NetServiceBrowserDelegate
+
 extension CLILoggingClient: NetServiceBrowserDelegate {
 
     public func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
@@ -197,6 +202,8 @@ extension CLILoggingClient: NetServiceBrowserDelegate {
     }
 }
 
+// MARK: - NetServiceDelegate
+
 extension CLILoggingClient: NetServiceDelegate {
 
     public func netServiceDidResolveAddress(_ sender: NetService) {
@@ -217,6 +224,8 @@ extension CLILoggingClient: NetServiceDelegate {
         connectToNextAddress()
     }
 }
+
+// MARK: - GCDAsyncSocketDelegate
 
 extension CLILoggingClient: GCDAsyncSocketDelegate {
 
