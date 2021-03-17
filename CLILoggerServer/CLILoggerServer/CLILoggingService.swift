@@ -11,8 +11,8 @@ import CocoaLumberjack
 import CLILogger
 import RainbowSwift
 
-class LoggingService: NSObject {
-    public static let shared = LoggingService()
+class CLILoggingService: NSObject {
+    public static let shared = CLILoggingService()
     public var serviceName: String = Host.current().name ?? "CLI Logging Service"
     public var port: UInt16 = 0
 
@@ -22,7 +22,7 @@ class LoggingService: NSObject {
 
     private var timer: DispatchSourceTimer?
     private var reading: Bool = false
-    private var dataQueue = DispatchQueue(label: "logging.serial.data.queue")
+    private var dataQueue = DispatchQueue(label: "clilogger.service.serial.data.queue")
 
     override private init() {
         super.init()
@@ -64,7 +64,7 @@ class LoggingService: NSObject {
 
             port = asyncSocket.localPort
 
-            netService = NetService(domain: LoggingServiceInfo.domain, type: LoggingServiceInfo.type, name: serviceName, port: Int32(port))
+            netService = NetService(domain: CLILoggingServiceInfo.domain, type: CLILoggingServiceInfo.type, name: serviceName, port: Int32(port))
             netService.delegate = self
             netService.publish()
 
@@ -81,7 +81,7 @@ class LoggingService: NSObject {
     }
 
     private func log(level: DDLogLevel, activity: String) {
-        guard let handler = LoggingServiceInfo.logHandler else {
+        guard let handler = CLILoggingServiceInfo.logHandler else {
             return
         }
 
@@ -89,7 +89,7 @@ class LoggingService: NSObject {
     }
 }
 
-extension LoggingService: NetServiceDelegate {
+extension CLILoggingService: NetServiceDelegate {
 
     func netServiceDidPublish(_ sender: NetService) {
         DDLogInfo("\(#function)")
@@ -105,7 +105,7 @@ extension LoggingService: NetServiceDelegate {
     }
 }
 
-extension LoggingService: GCDAsyncSocketDelegate {
+extension CLILoggingService: GCDAsyncSocketDelegate {
 
     func socket(_ sock: GCDAsyncSocket, didAcceptNewSocket newSocket: GCDAsyncSocket) {
         DDLogInfo("\(#function): \(newSocket.connectedHost ?? "Unknown")")
@@ -124,13 +124,13 @@ extension LoggingService: GCDAsyncSocketDelegate {
 
         let endIndex = data.endIndex - Data.terminator.endIndex + 1
         let validData = data.subdata(in: 0..<data.index(before: endIndex))
-        let entity = LoggingEntity(data: validData)
+        let entity = CLILoggingEntity(data: validData)
 
         print(entity.prettyFormatMessage())
     }
 }
 
-extension LoggingEntity {
+extension CLILoggingEntity {
     static var formatter: DateFormatter {
         let formatter = DateFormatter()
 

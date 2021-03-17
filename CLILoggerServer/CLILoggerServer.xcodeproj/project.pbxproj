@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		685A91E625F34576002C6102 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A91E525F34576002C6102 /* main.swift */; };
 		685A91F525F3CB13002C6102 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 685A91F425F3CB13002C6102 /* ArgumentParser */; };
-		685A920D25F3EDCA002C6102 /* LoggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A920C25F3EDCA002C6102 /* LoggingService.swift */; };
-		68B368C02600542200F6C732 /* LoggingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68B368BF2600542200F6C732 /* LoggingConfig.swift */; };
+		685A920D25F3EDCA002C6102 /* CLILoggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685A920C25F3EDCA002C6102 /* CLILoggingService.swift */; };
+		68B368C02600542200F6C732 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68B368BF2600542200F6C732 /* Configuration.swift */; };
 		890B47A0966FB6D71C4067DB /* libPods-CLILoggerServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2451DC1179D65F23D507259A /* libPods-CLILoggerServer.a */; };
 /* End PBXBuildFile section */
 
@@ -30,8 +30,8 @@
 		2451DC1179D65F23D507259A /* libPods-CLILoggerServer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CLILoggerServer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		685A91E225F34576002C6102 /* CLILoggerServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CLILoggerServer; sourceTree = BUILT_PRODUCTS_DIR; };
 		685A91E525F34576002C6102 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		685A920C25F3EDCA002C6102 /* LoggingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingService.swift; sourceTree = "<group>"; };
-		68B368BF2600542200F6C732 /* LoggingConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingConfig.swift; sourceTree = "<group>"; };
+		685A920C25F3EDCA002C6102 /* CLILoggingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLILoggingService.swift; sourceTree = "<group>"; };
+		68B368BF2600542200F6C732 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		A4428C2A61DD9393A626826C /* Pods-CLILoggerServer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CLILoggerServer.release.xcconfig"; path = "Target Support Files/Pods-CLILoggerServer/Pods-CLILoggerServer.release.xcconfig"; sourceTree = "<group>"; };
 		BFB3A83EDEB9CAAAECC7ED80 /* Pods-CLILoggerServer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CLILoggerServer.debug.xcconfig"; path = "Target Support Files/Pods-CLILoggerServer/Pods-CLILoggerServer.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -80,8 +80,8 @@
 			isa = PBXGroup;
 			children = (
 				685A91E525F34576002C6102 /* main.swift */,
-				685A920C25F3EDCA002C6102 /* LoggingService.swift */,
-				68B368BF2600542200F6C732 /* LoggingConfig.swift */,
+				685A920C25F3EDCA002C6102 /* CLILoggingService.swift */,
+				68B368BF2600542200F6C732 /* Configuration.swift */,
 			);
 			path = CLILoggerServer;
 			sourceTree = "<group>";
@@ -184,8 +184,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				685A91E625F34576002C6102 /* main.swift in Sources */,
-				685A920D25F3EDCA002C6102 /* LoggingService.swift in Sources */,
-				68B368C02600542200F6C732 /* LoggingConfig.swift in Sources */,
+				685A920D25F3EDCA002C6102 /* CLILoggingService.swift in Sources */,
+				68B368C02600542200F6C732 /* Configuration.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

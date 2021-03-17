@@ -1,5 +1,5 @@
 //
-//  LoggingClient.swift
+//  CLILoggingClient.swift
 //  CLILoggerClient
 //
 //  Created by WeiHan on 2021/3/7.
@@ -10,13 +10,13 @@ import CocoaAsyncSocket
 import CocoaLumberjack
 
 @objcMembers
-public class LoggingClient: NSObject {
+public class CLILoggingClient: NSObject {
     private var netServiceBrowser: NetServiceBrowser?
     private var allAvailableServices: [NetService] = []
     private var selectedServiceIndex: Int = 0 {
         didSet {
             selectService?.delegate = self
-            selectService?.resolve(withTimeout: LoggingServiceInfo.timeout)
+            selectService?.resolve(withTimeout: CLILoggingServiceInfo.timeout)
         }
     }
     private var selectService: NetService? {
@@ -38,10 +38,10 @@ public class LoggingClient: NSObject {
         }
     }
     private var writing: Bool = false
-    private var pendingMessages: [LoggingEntity] = []
-    private var dataQueue = DispatchQueue(label: "logging.serial.data.queue")
+    private var pendingMessages: [CLILoggingEntity] = []
+    private var dataQueue = DispatchQueue(label: "clilogger.client.serial.data.queue")
 
-    public static var shared = LoggingClient()
+    public static var shared = CLILoggingClient()
 
     /// This method must be run in main thread because of NetServiceBrowser.
     public func searchService() {
@@ -52,7 +52,7 @@ public class LoggingClient: NSObject {
 
             self.netServiceBrowser = NetServiceBrowser()
             self.netServiceBrowser?.delegate = self
-            self.netServiceBrowser?.searchForServices(ofType: LoggingServiceInfo.type, inDomain: LoggingServiceInfo.domain)
+            self.netServiceBrowser?.searchForServices(ofType: CLILoggingServiceInfo.type, inDomain: CLILoggingServiceInfo.domain)
         }
     }
 
@@ -62,15 +62,15 @@ public class LoggingClient: NSObject {
 
     public func log(_ args: [String], level: DDLogLevel = .debug, module: String? = nil) {
         let msg = args.joined(separator: " ")
-        log(entity: LoggingEntity(message: msg, level: level, module: module))
+        log(entity: CLILoggingEntity(message: msg, level: level, module: module))
     }
 
-    public func log(entity: LoggingEntity) {
+    public func log(entity: CLILoggingEntity) {
         pendingMessages.append(entity)
     }
 
     private func log(_ level: DDLogLevel, activity: String) {
-        guard let handler = LoggingServiceInfo.logHandler else {
+        guard let handler = CLILoggingServiceInfo.logHandler else {
             return
         }
 
@@ -86,7 +86,7 @@ public class LoggingClient: NSObject {
             serverAddresses.removeFirst()
 
             do {
-                try asyncSocket?.connect(toAddress: address, withTimeout: LoggingServiceInfo.timeout)
+                try asyncSocket?.connect(toAddress: address, withTimeout: CLILoggingServiceInfo.timeout)
                 done = true
             } catch let error {
                 print("Unable to connect with error: \(error)")
@@ -115,7 +115,7 @@ public class LoggingClient: NSObject {
         let entity = pendingMessages.first!
 
         writing = true
-        socket.write(entity.bufferData, withTimeout: LoggingServiceInfo.timeout, tag: entity.tag)
+        socket.write(entity.bufferData, withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag)
     }
 
     private func resetCurrentService() {
@@ -165,7 +165,7 @@ public class LoggingClient: NSObject {
     }
 }
 
-extension LoggingClient: NetServiceBrowserDelegate {
+extension CLILoggingClient: NetServiceBrowserDelegate {
 
     public func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
         log(.verbose, activity: "\(#function), found service \(service.name), has more: \(moreComing)")
@@ -197,7 +197,7 @@ extension LoggingClient: NetServiceBrowserDelegate {
     }
 }
 
-extension LoggingClient: NetServiceDelegate {
+extension CLILoggingClient: NetServiceDelegate {
 
     public func netServiceDidResolveAddress(_ sender: NetService) {
         log(.info, activity: "\(#function)")
@@ -218,7 +218,7 @@ extension LoggingClient: NetServiceDelegate {
     }
 }
 
-extension LoggingClient: GCDAsyncSocketDelegate {
+extension CLILoggingClient: GCDAsyncSocketDelegate {
 
     public func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
         log(.verbose, activity: "\(#function), host: \(host), port: \(port)")

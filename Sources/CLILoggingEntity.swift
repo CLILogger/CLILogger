@@ -1,5 +1,5 @@
 //
-//  LoggingEntity.swift
+//  CLILoggingEntity.swift
 //  CLILoggerServer
 //
 //  Created by WeiHan on 2021/3/7.
@@ -9,7 +9,7 @@ import Foundation
 import CocoaLumberjack
 
 @objcMembers
-public class LoggingEntity: NSObject {
+public class CLILoggingEntity: NSObject {
     public private(set) var date: Date!
     public private(set) var level: DDLogLevel!
     public private(set) var module: String?
@@ -38,7 +38,7 @@ public class LoggingEntity: NSObject {
     }
 }
 
-extension LoggingEntity {
+extension CLILoggingEntity {
 
     private enum JSONKey: String {
         case date

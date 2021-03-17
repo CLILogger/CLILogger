@@ -21,7 +21,7 @@ if (ProcessInfo().environment["TERM"] != nil) {
 var config = Configuration()
 
 if !config.load(from: Configuration.defaultConfigFile) {
-    config.addModule(klass: LoggingService.self, mode: .blocklist)
+    config.addModule(klass: CLILoggingService.self, mode: .blocklist)
     config.saveToDefaultFileIfNecessary()
 }
 
@@ -36,9 +36,9 @@ struct CLILogger: ParsableCommand {
     var port: UInt16?
 
     mutating func run() throws {
-        DDLog.setLevel(verbose ? .verbose : .info, for: LoggingService.self)
+        DDLog.setLevel(verbose ? .verbose : .info, for: CLILoggingService.self)
 
-        LoggingServiceInfo.logHandler = { level, message in
+        CLILoggingServiceInfo.logHandler = { level, message in
             switch level {
             case .error:
                 DDLogError(message)
@@ -65,7 +65,7 @@ struct CLILogger: ParsableCommand {
             }
         }
 
-        let service = LoggingService.shared
+        let service = CLILoggingService.shared
 
         if let name = serviceName {
             service.serviceName = name
