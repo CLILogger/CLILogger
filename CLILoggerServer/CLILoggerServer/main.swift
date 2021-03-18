@@ -30,7 +30,7 @@ struct App: ParsableCommand {
     @Option(name: .shortAndLong, help: "The service port number, defaults to automatic.")
     var port: UInt16?
 
-    @Option(name: .shortAndLong, help: "Configuration file path, defaults to $HOME/.config/clilogger/default.plist.", completion: .file(extensions: ["plist"]))
+    @Option(name: .shortAndLong, help: "Configuration file path, defaults to \(Configuration.defaultConfigFile.path)", completion: .file(extensions: [Configuration.defaultConfigFileExtension]))
     var file: String?
     
     static var _commandName: String {
@@ -75,7 +75,8 @@ struct App: ParsableCommand {
             }
 
             config.applyChanges(from: newConfig)
-            DDLogInfo("Reloaded latest configuration changes!");
+            DDLogInfo("Reloaded latest configuration changes!")
+            DDLogVerbose("Note that new changes only affect the log level and module settings")
         }
     }
 

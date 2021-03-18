@@ -97,7 +97,7 @@ It's highly recommended you integrate it with `CococaLumberjack` since we use th
 
 
 
-Try to discovery the logging bonjour service via [Discovery for macOS](), [Discovery for iOS]() or `dns-sd`:
+Try to discover the logging bonjour service via [Discovery for macOS](https://apps.apple.com/app/discovery-dns-sd-browser/id1381004916?mt=12), [Discovery for iOS](https://apps.apple.com/app/discovery-dns-sd-browser/id305441017) or `dns-sd`:
 
 ```bash
 ➜ dns-sd -B _cli-logger-server._tcp.

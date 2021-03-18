@@ -11,7 +11,7 @@ import CocoaLumberjack
 import CLILogger
 
 class CLILoggingService: NSObject {
-    public var serviceName: String = Host.current().name ?? "CLI Logging Service"
+    public var serviceName: String?
     public var port: UInt16 = 0
 
     // Incoming message handler
@@ -48,9 +48,10 @@ class CLILoggingService: NSObject {
         do {
             try asyncSocket.accept(onPort: port)
 
+            serviceName = serviceName ?? Host.current().name ?? "CLI Logging Service"
             port = asyncSocket.localPort
 
-            netService = NetService(domain: CLILoggingServiceInfo.domain, type: CLILoggingServiceInfo.type, name: serviceName, port: Int32(port))
+            netService = NetService(domain: CLILoggingServiceInfo.domain, type: CLILoggingServiceInfo.type, name: serviceName!, port: Int32(port))
             netService.delegate = self
             netService.publish()
 
