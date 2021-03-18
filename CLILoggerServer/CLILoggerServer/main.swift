@@ -13,7 +13,13 @@ import CLILogger
 var config: Configuration!
 var service: CLILoggingService!
 
+let allConfigFiles = Configuration.allAvailableConfigurationFiles
+let allProjects = Configuration.allAvailableProjects
+
 struct App: ParsableCommand {
+
+    @Argument(help: "Project names.", completion: .list(allProjects), transform: {_ in allProjects})
+    var projectNames: [String]?
 
     @Flag(help: "Show verbose logging of internal service or not.")
     var verbose = false
@@ -24,11 +30,11 @@ struct App: ParsableCommand {
     @Option(name: .shortAndLong, help: "The service port number, defaults to automatic.")
     var port: UInt16?
 
-    @Option(name: .shortAndLong, help: "Configuration file path, defaults to $HOME/.config/clilogger/default.plist.")
+    @Option(name: .shortAndLong, help: "Configuration file path, defaults to $HOME/.config/clilogger/default.plist.", completion: .file(extensions: ["plist"]))
     var file: String?
     
     static var _commandName: String {
-        "cli-logger"
+        Configuration.appName
     }
 
     mutating func run() throws {

@@ -32,6 +32,8 @@ public struct Configuration {
         }
     }
 
+    public fileprivate(set) var projectName: String?
+
     public fileprivate(set) var logLevel: DDLogLevel = .verbose
     public fileprivate(set) var modules: [Module] = []
 
@@ -77,11 +79,24 @@ extension Configuration {
 
 extension Configuration {
 
-    public static var defaultConfigFile: URL {
+    public static var defaultConfigFolder: URL {
         URL(fileURLWithPath: NSHomeDirectory())
             .appendingPathComponent(".config", isDirectory: true)
-            .appendingPathComponent("clilogger", isDirectory: true)
-            .appendingPathComponent("default.plist", isDirectory: false)
+            .appendingPathComponent(appName, isDirectory: true)
+    }
+
+    public static var appName: String {
+        "cli-logger"
+    }
+
+    public static var defaultConfigFileExtension: String {
+        "plist"
+    }
+
+    public static var defaultConfigFile: URL {
+        defaultConfigFolder
+            .appendingPathComponent("default", isDirectory: false)
+            .appendingPathExtension(defaultConfigFileExtension)
     }
 
     @discardableResult
@@ -104,11 +119,68 @@ extension Configuration {
     }
 }
 
+// MARK: - Project
+
+extension Configuration {
+
+    public static var allAvailableConfigurationFiles: [String] {
+        let rootPath = defaultConfigFolder.path
+
+        do {
+            let filenames = try FileManager.default.contentsOfDirectory(atPath: rootPath)
+            return filenames.filter { (filename) -> Bool in
+                let fullpath = defaultConfigFolder.appendingPathComponent(filename).path
+                var isDirectory: ObjCBool = false
+
+                if !FileManager.default.fileExists(atPath: fullpath, isDirectory: &isDirectory) || isDirectory.boolValue {
+                    return false
+                }
+
+                if filename.hasPrefix(".") {
+                    return false
+                }
+
+                if !filename.hasSuffix(defaultConfigFileExtension) {
+                    return false
+                }
+
+                return true
+            }
+        } catch {
+            DDLogError("Failed to scan configuration file under directory \(rootPath)")
+        }
+
+        return []
+    }
+
+    public static var allAvailableProjects: [String] {
+        var projects: [String] = []
+
+        allAvailableConfigurationFiles.forEach { (configName) in
+            let url = defaultConfigFolder.appendingPathComponent(configName)
+            var config = Configuration()
+
+            if !config.load(from: url) {
+                return
+            }
+
+            guard let name = config.projectName else {
+                return
+            }
+
+            projects.append(name)
+        }
+
+        return projects
+    }
+}
+
 // MARK: - Load & Save
 
 extension Configuration {
 
     enum JSONKey: String {
+        case projectName = "ProjectName"
         case logLevel = "LogLevel"
         case whitelistModules = "WhitelistModules"
         case blocklistModules = "BlocklistModules"
@@ -132,6 +204,7 @@ extension Configuration {
             let whitelistModules: [Module] = (dict[JSONKey.whitelistModules.name] as! [String?]).map { Module(name: $0, mode: .whitelist) }
             let blocklistModules: [Module] = (dict[JSONKey.blocklistModules.name] as! [String?]).map { Module(name: $0, mode: .blocklist) }
 
+            projectName = dict[JSONKey.projectName.name] as? String
             logLevel = TitledLogFlag(rawValue: dict[JSONKey.logLevel.name] as! String)!.ddlogLevel
             modules += whitelistModules + blocklistModules
             serviceName = dict[JSONKey.serviceName.name] as? String
@@ -147,6 +220,7 @@ extension Configuration {
     @discardableResult
     private func save(to file: URL) -> Bool {
         let dict: [String: Any] = [
+            JSONKey.projectName.name: projectName ?? "",
             JSONKey.logLevel.name: logLevel.title.name,
             JSONKey.whitelistModules.name: whitelistModules.map { $0.name },
             JSONKey.blocklistModules.name: blocklistModules.map { $0.name },
