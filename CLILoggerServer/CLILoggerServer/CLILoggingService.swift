@@ -9,43 +9,29 @@ import Foundation
 import CocoaAsyncSocket
 import CocoaLumberjack
 import CLILogger
-import RainbowSwift
 
 class CLILoggingService: NSObject {
-    public static let shared = CLILoggingService()
     public var serviceName: String = Host.current().name ?? "CLI Logging Service"
     public var port: UInt16 = 0
 
+    // Incoming message handler
+    public var foundIncomingMessage: ((CLILoggingEntity) -> Void)?
+
+    // Service and sockets info.
     private var netService: NetService!
     private var asyncSocket: GCDAsyncSocket!
     private var connectedSockets: [GCDAsyncSocket] = []
 
+    // Read the incoming message entities repeatly.
     private var timer: DispatchSourceTimer?
     private var reading: Bool = false
     private var dataQueue = DispatchQueue(label: "clilogger.service.serial.data.queue")
 
-    override private init() {
+    public override init() {
         super.init()
         self.asyncSocket = GCDAsyncSocket(delegate: self, delegateQueue: DispatchQueue.main)
 
-        timer = DispatchSource.makeTimerSource(queue: dataQueue)
-
-        timer?.setEventHandler { [unowned self] in
-            if self.reading && self.connectedSockets.count <= 0 {
-                return
-            }
-
-            self.reading = true
-            for socket in self.connectedSockets {
-                // timeout -1 means waits forever, any other explict positive values
-                // will make the socket get disconnected after timeout.
-                socket.readData(to: Data.terminator, withTimeout: -1, tag: 0)
-            }
-            self.reading = false
-        }
-
-        timer?.schedule(deadline: .now(), repeating: .milliseconds(1), leeway: .microseconds(500))
-        timer?.resume()
+        setupTimer()
     }
 
     deinit {
@@ -78,6 +64,27 @@ class CLILoggingService: NSObject {
         } catch let err {
             DDLogError("error: \(err)")
         }
+    }
+
+    private func setupTimer() {
+        timer = DispatchSource.makeTimerSource(queue: dataQueue)
+
+        timer?.setEventHandler { [unowned self] in
+            if self.reading && self.connectedSockets.count <= 0 {
+                return
+            }
+
+            self.reading = true
+            for socket in self.connectedSockets {
+                // timeout -1 means waits forever, any other explict positive values
+                // will make the socket get disconnected after timeout.
+                socket.readData(to: Data.terminator, withTimeout: -1, tag: 0)
+            }
+            self.reading = false
+        }
+
+        timer?.schedule(deadline: .now(), repeating: .milliseconds(1), leeway: .microseconds(500))
+        timer?.resume()
     }
 
     private func log(level: DDLogLevel, activity: String) {
@@ -129,7 +136,9 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
         let validData = data.subdata(in: 0..<data.index(before: endIndex))
         let entity = CLILoggingEntity(data: validData)
 
-        print(entity.prettyFormatMessage())
+        if let handler = foundIncomingMessage {
+            handler(entity)
+        }
     }
 }
 
@@ -139,59 +148,5 @@ extension GCDAsyncSocket {
     fileprivate var name: String? {
         get { return userData as? String }
         set { userData = newValue }
-    }
-}
-
-extension CLILoggingEntity {
-    static var formatter: DateFormatter {
-        let formatter = DateFormatter()
-
-        formatter.dateFormat = "HH:mm:ss"
-        return formatter
-    }
-
-    public func prettyFormatMessage() -> String {
-        var result = Self.formatter.string(from: date)
-        var strLevel = ""
-        var color = Color.default
-
-        switch flag! {
-        case .error:
-            strLevel = "ERROR"
-            color = .red
-            break
-
-        case .warning:
-            strLevel = "WARNING"
-            color = .yellow
-            break
-
-        case .info:
-            strLevel = "INFO"
-            color = .lightWhite
-            break
-
-        case .debug:
-            strLevel = "DEBUG"
-            color = .green
-            break
-
-        case .verbose:
-            strLevel = "VERBOSE"
-            color = .black
-            break
-
-        default:
-            break
-        }
-
-        result += " \(strLevel.padding(toLength: 8, withPad: " ", startingAt: 0))"
-
-        if let mod = module {
-            result += " \(mod)"
-        }
-
-        result += " \(message!)"
-        return result.applyingColor(color)
     }
 }

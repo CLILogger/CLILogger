@@ -10,54 +10,94 @@ import ArgumentParser
 import CocoaLumberjack
 import CLILogger
 
-var config = Configuration()
+var config: Configuration!
+var service: CLILoggingService!
 
-if !config.load(from: Configuration.defaultConfigFile) {
-    config.addModule(klass: CLILoggingService.self, mode: .blocklist)
-    config.saveToDefaultFileIfNecessary()
-}
+struct App: ParsableCommand {
 
-func SetupInternalLogger(level: DDLogLevel) {
-    if (ProcessInfo().environment["TERM"] != nil) {
-        // Terminal
-        DDLog.add(DDTTYLogger.sharedInstance!, with: level)
-    } else {
-        // Xcode Console
-        DDLog.add(DDOSLogger.sharedInstance, with: level)
-    }
-}
-
-struct CLILogger: ParsableCommand {
     @Flag(help: "Show verbose logging of internal service or not.")
     var verbose = false
 
-    @Argument(help: "Service name.")
+    @Option(name: .shortAndLong, help: "The service name, defaults to current device host name.")
     var serviceName: String?
 
     @Option(name: .shortAndLong, help: "The service port number, defaults to automatic.")
     var port: UInt16?
 
+    @Option(name: .shortAndLong, help: "Configuration file path, defaults to $HOME/.config/clilogger/default.plist.")
+    var file: String?
+    
+    static var _commandName: String {
+        "cli-logger"
+    }
+
     mutating func run() throws {
-        SetupInternalLogger(level: verbose ? .verbose : .info)
+        setupInternalLogger(level: verbose ? .verbose : .info)
+        setupConfiguration()
 
-        let service = CLILoggingService.shared
-
-        if let name = serviceName {
-            service.serviceName = name
-        } else if let configName = config.serviceName {
-            service.serviceName = configName
-        }
-
-        if let p = port {
-            service.port = p
-        } else if let configPort = config.servicePort {
-            service.port = configPort
-        }
-
+        setupService()
         service.publish()
+    }
+
+    // MARK: - Private
+
+    func setupInternalLogger(level: DDLogLevel) {
+        if (ProcessInfo().environment["TERM"] != nil) {
+            // Terminal
+            DDLog.add(DDTTYLogger.sharedInstance!, with: level)
+        } else {
+            // Xcode Console
+            DDLog.add(DDOSLogger.sharedInstance, with: level)
+        }
+    }
+
+    func setupConfiguration() {
+        config = Configuration()
+
+        if let path = file {
+            config.load(from: URL(fileURLWithPath: path))
+        } else {
+            if !config.load(from: Configuration.defaultConfigFile) {
+                config.addModule(klass: CLILoggingService.self, mode: .blocklist)
+                config.saveToDefaultFileIfNecessary()
+            }
+        }
+
+        config.startObserve { newConfiguration in
+            guard let newConfig = newConfiguration else {
+                return
+            }
+
+            config.applyChanges(from: newConfig)
+            DDLogInfo("Reloaded latest configuration changes!");
+        }
+    }
+
+    func setupService() {
+        service = CLILoggingService()
+
+        service.serviceName = serviceName ?? config.serviceName ?? ""
+        service.port = port ?? config.servicePort ?? 0
+
+        service.foundIncomingMessage = { entity in
+            guard (entity.flag.rawValue & config.logLevel.rawValue) != 0 else {
+                return
+            }
+
+            guard let module = entity.module else {
+                entity.output()
+                return
+            }
+
+            let mode = config.matchModule(name: module)
+
+            if mode == .whitelist || mode == .default {
+                entity.output()
+            }
+        }
     }
 }
 
-CLILogger.main()
+App.main()
 
 RunLoop.current.run()

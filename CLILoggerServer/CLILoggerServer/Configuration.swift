@@ -32,11 +32,13 @@ public struct Configuration {
         }
     }
 
-    public fileprivate(set) var logLevel: DDLogLevel = .info
+    public fileprivate(set) var logLevel: DDLogLevel = .verbose
     public fileprivate(set) var modules: [Module] = []
 
     public fileprivate(set) var serviceName: String?
     public fileprivate(set) var servicePort: UInt16?
+
+    fileprivate var fileChangeObserver: DispatchSourceFileSystemObject?
 }
 
 // MARK: - Modules
@@ -57,6 +59,18 @@ extension Configuration {
     public mutating func addModule(klass: AnyClass, mode: Module.Mode = .default) {
         addModule(name: String(describing: klass), mode: mode)
     }
+
+    public func matchModule(name: String) -> Module.Mode {
+        if let _ = whitelistModules.first(where: { $0.name == name }) {
+            return .whitelist
+        }
+
+        if let _ = blocklistModules.first(where: { $0.name == name }) {
+            return .blocklist
+        }
+
+        return .default
+    }
 }
 
 // MARK: - Default Configuration
@@ -67,7 +81,7 @@ extension Configuration {
         URL(fileURLWithPath: NSHomeDirectory())
             .appendingPathComponent(".config", isDirectory: true)
             .appendingPathComponent("clilogger", isDirectory: true)
-            .appendingPathComponent("config.plist", isDirectory: false)
+            .appendingPathComponent("default.plist", isDirectory: false)
     }
 
     @discardableResult
@@ -83,7 +97,7 @@ extension Configuration {
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
             save(to: url)
         } catch {
-            print("Create intermediate directory for \(url) failed with error \(error)")
+            DDLogError("Create intermediate directory for \(url) failed with error \(error)")
         }
 
         return true
@@ -118,12 +132,12 @@ extension Configuration {
             let whitelistModules: [Module] = (dict[JSONKey.whitelistModules.name] as! [String?]).map { Module(name: $0, mode: .whitelist) }
             let blocklistModules: [Module] = (dict[JSONKey.blocklistModules.name] as! [String?]).map { Module(name: $0, mode: .blocklist) }
 
-            self.logLevel = DDLogLevel(rawValue: dict[JSONKey.logLevel.name] as! UInt) ?? .info
-            self.modules += whitelistModules + blocklistModules
-            self.serviceName = dict[JSONKey.serviceName.name] as? String
-            self.servicePort = dict[JSONKey.servicePort.name] as? UInt16
+            logLevel = TitledLogFlag(rawValue: dict[JSONKey.logLevel.name] as! String)!.ddlogLevel
+            modules += whitelistModules + blocklistModules
+            serviceName = dict[JSONKey.serviceName.name] as? String
+            servicePort = dict[JSONKey.servicePort.name] as? UInt16
         } catch {
-            print("Failed to read configuration from file \(file) with error \(error)")
+            DDLogError("Failed to read configuration from file \(file) with error \(error)")
             return false
         }
 
@@ -133,7 +147,7 @@ extension Configuration {
     @discardableResult
     private func save(to file: URL) -> Bool {
         let dict: [String: Any] = [
-            JSONKey.logLevel.name: logLevel.rawValue,
+            JSONKey.logLevel.name: logLevel.title.name,
             JSONKey.whitelistModules.name: whitelistModules.map { $0.name },
             JSONKey.blocklistModules.name: blocklistModules.map { $0.name },
             JSONKey.serviceName.name: serviceName ?? "",
@@ -144,10 +158,45 @@ extension Configuration {
             let data = try PropertyListSerialization.data(fromPropertyList: dict, format: .xml, options: .max)
             try data.write(to: file)
         } catch {
-            print("Failed to save configuration with error \(error)")
+            DDLogError("Failed to save configuration with error \(error)")
             return false
         }
 
         return true
+    }
+}
+
+// MARK: - Observe Changes
+
+extension Configuration {
+
+    public mutating func startObserve(handler: @escaping ((Configuration?) -> Void)) {
+        let fileURL = Self.defaultConfigFile
+        let descriptor = open(fileURL.path, O_EVTONLY)
+        fileChangeObserver = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor, eventMask: .write, queue: nil)
+
+        fileChangeObserver?.setEventHandler(handler: {
+            var newConfig = Configuration()
+
+            if newConfig.load(from: fileURL) {
+                handler(newConfig)
+            } else {
+                handler(nil)
+                DDLogError("Reloading configuration changes failed!")
+            }
+        })
+
+        fileChangeObserver?.activate()
+    }
+
+    public func stopObserve() {
+        fileChangeObserver?.cancel()
+    }
+
+    public mutating func applyChanges(from config: Configuration) {
+        logLevel = config.logLevel
+        modules = config.modules
+        serviceName = config.serviceName
+        servicePort = config.servicePort
     }
 }
