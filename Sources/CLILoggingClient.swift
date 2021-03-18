@@ -105,13 +105,17 @@ public class CLILoggingClient: NSObject {
     }
 
     private func dispatchPendingMessages() {
-        // log(activity: "dispatching...\(pendingMessages.count) message(s) pending.")
-
-        if pendingMessages.isEmpty {
+        guard let socket = asyncSocket, connected else {
             return
         }
 
-        guard let socket = asyncSocket, connected else {
+        if writing {
+            return
+        }
+
+        log(.verbose, activity: "dispatching...\(pendingMessages.count) message(s) pending.")
+
+        if pendingMessages.isEmpty {
             return
         }
 
