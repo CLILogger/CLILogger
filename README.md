@@ -1,6 +1,8 @@
 # CLILogger
 
+A logging utility like [NSLogger](https://github.com/fpillet/NSLogger) but based on command line viewer.
 
+![example](./Resources/example.png)
 
 ## Server
 
@@ -28,7 +30,7 @@ OPTIONS:
 ##### Installation
 
 ```ruby
-pod 'CLILogger',, :configurations => ['Debug'], :git => 'https://github.com/CLILogger/CLILogger', :branch => 'master'
+pod 'CLILogger', :configurations => ['Debug'], :git => 'https://github.com/CLILogger/CLILogger', :branch => 'master'
 ```
 
 > It still stays in alpha stage but it’s ready for common usages, I’ll be careful for `master`. :)
@@ -79,11 +81,8 @@ When starting to search the local logging bonjour service, make sure the logging
 
 Support to forward the log messages to CLILoggingClient easily, take the log filename without extension as module name.
 
-```objective-c
-
-NSString *module = logMessage->_file.lastPathComponent.stringByDeletingPathExtension;
-CLILoggingEntity *entity = [[CLILoggingEntity alloc] initWithMessage:message flag:logMessage->_flag module:module];
-[CLILoggingClient.shared logWithEntity:entity];
+```swift
+DDLog.add(CLILogger.shared)
 ```
 
 It's highly recommended you integrate it with `CococaLumberjack` since we use the `DDLogFlag` type as message flag and `DDLog` functions to trace internal logs inside, too.
@@ -92,11 +91,7 @@ It's highly recommended you integrate it with `CococaLumberjack` since we use th
 
 ## Technology
 
-`cli-logger` starts a tcp server with specified name and port for reading all the incoming clients’ arranged data (called `entity` internally), 
-
-
-
-
+`cli-logger` starts a tcp server with specified name and port for reading all the incoming clients’ arranged data (called `entity` internally), once receiving the data message from client, it will output the formatted message in console.
 
 Try to discover the logging bonjour service via [Discovery for macOS](https://apps.apple.com/app/discovery-dns-sd-browser/id1381004916?mt=12), [Discovery for iOS](https://apps.apple.com/app/discovery-dns-sd-browser/id305441017) or `dns-sd`:
 
@@ -104,7 +99,7 @@ Try to discover the logging bonjour service via [Discovery for macOS](https://ap
 ➜ dns-sd -B _cli-logger-server._tcp.
 ```
 
-
+`CLILogger` in client side try to search the fixed tcp type in domain `local.`,  once the connection established successfully, it waits the log message when calling `log(:entity:)` of `CLILoggingClient`, note that there is a pending message queue inside used to cache the messages when *connection to logging service is not established*, they will be cleaned up one by one after the connection is available. Don’t doubt the message date you see in console output, that’s the time generated from client’s logger exactly.
 
 
 
@@ -121,13 +116,33 @@ For iOS 14, bonjour service on local network is disabled by default, adding the 
 </array>
 ```
 
-Otherwise you will [get error](https://developer.apple.com/forums/thread/653316) `["NSNetServicesErrorDomain": 10, "NSNetServicesErrorCode": -72000]`.
+Otherwise you will [get this error](https://developer.apple.com/forums/thread/653316):
+
+````
+["NSNetServicesErrorDomain": 10, "NSNetServicesErrorCode": -72000]
+````
 
 
 
 #### Differences [NSLogger](https://github.com/fpillet/NSLogger)
 
+`CLILogger` loves [CLI](https://en.wikipedia.org/wiki/Command-line_interface), it receives the messages from client and pipe it to custom scripts whatever in macOS/*nix.
 
+`CLILogger` is a big fans of `CocoaLumberjack`, too. It reuses the log flag/level definition of `CocoaLumberjack` and trace the internal logs inside. Besides, it’s so easy for iOS client app to integrate with `CocoaLumberjack`.
+
+
+
+## Plan
+
+#### Client
+
+- [ ] Support to choose logger service when multiple services in a same WLAN environment.
+
+#### Server
+
+- [ ] Support to show client alias.
+- [ ] Support to save and pipe the logging message to local file and other process.
+- [ ] Custom the log color by log level in the config file.
 
 
 

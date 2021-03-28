@@ -28,6 +28,6 @@ public class CLILogger: NSObject, DDLogger {
     }
 
     public func log(message logMessage: DDLogMessage) {
-        client.log(logMessage.message, flag: logMessage.flag, module: logMessage.file)
+        client.log(logMessage.message, flag: logMessage.flag, module: logMessage.fileName)
     }
 }

@@ -27,8 +27,11 @@ client.log("See", "you", "next", "time!")
 #else
 DDLog.add(CLILogger.shared)
 
+DDLogVerbose("Hello!")
 DDLogDebug("This is \(Host.current().name ?? "a guest")")
-DDLogVerbose("See you!")
+DDLogInfo("The default internal log level is INFO")
+DDLogWarn("Warn me if something wrong you encounter")
+DDLogError("Remember to attach the error context verbosely")
 #endif
 RunLoop.main.run()
 
