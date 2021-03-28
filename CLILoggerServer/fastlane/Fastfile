@@ -1,0 +1,60 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+
+
+default_platform(:mac)
+
+platform :mac do
+  desc "Build a release executable file."
+  lane :release do
+    build_app(
+      workspace: "CLILoggerServer.xcworkspace",
+      configuration: "Release",
+      scheme: "CLILoggerServer",
+      silent: true,
+      clean: true,
+      output_directory: "./build/",
+      output_name: "cli-logger",
+    )
+
+    notification(subtitle: "Finished Building", message: "Ready to upload...")
+
+    changelog = prompt(
+      text: "Changelog: \n",
+      multi_line_end_keyword: "EOF"
+    )
+    commit = last_git_commit
+    File.write("../build/changelog", "#{changelog}\n\nCommit: #{commit[:commit_hash]}\n")
+  end
+
+  desc "Upload the existing release build to github release page."
+  lane :upload do
+    github_release = set_github_release(
+      repository_name: "CLILogger/CLILogger",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: "CLILoggerServer(cli-logger)",
+      tag_name: Time.new.strftime("%Y.%m.%d"),
+      description: (File.read("./build/changelog") rescue "No changelog provided"),
+      commitish: "master",
+      upload_assets: ["./build/cli-logger"]
+    )
+
+    notification(subtitle: "Finished Uploading", message: "", open: "https://github.com/CLILogger/CLILogger/releases")
+  end
+
+  desc "Build the release archive and upload it to github release page."
+  lane :fire do
+    release
+    upload
+  end
+end

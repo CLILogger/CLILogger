@@ -30,7 +30,7 @@
 
 /* Begin PBXFileReference section */
 		2451DC1179D65F23D507259A /* libPods-CLILoggerServer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CLILoggerServer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		685A91E225F34576002C6102 /* CLILoggerServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CLILoggerServer; sourceTree = BUILT_PRODUCTS_DIR; };
+		685A91E225F34576002C6102 /* cli-logger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "cli-logger"; sourceTree = BUILT_PRODUCTS_DIR; };
 		685A91E525F34576002C6102 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		685A920C25F3EDCA002C6102 /* CLILoggingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLILoggingService.swift; sourceTree = "<group>"; };
 		68B368BF2600542200F6C732 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
@@ -75,7 +75,7 @@
 		685A91E325F34576002C6102 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				685A91E225F34576002C6102 /* CLILoggerServer */,
+				685A91E225F34576002C6102 /* cli-logger */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -121,7 +121,7 @@
 				685A91F425F3CB13002C6102 /* ArgumentParser */,
 			);
 			productName = CLILoggerServer;
-			productReference = 685A91E225F34576002C6102 /* CLILoggerServer */;
+			productReference = 685A91E225F34576002C6102 /* cli-logger */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -322,7 +322,7 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "cli-logger";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};
@@ -335,7 +335,7 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "cli-logger";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};
