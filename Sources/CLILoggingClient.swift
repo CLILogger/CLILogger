@@ -48,13 +48,16 @@ public class CLILoggingClient: NSObject {
     public func searchService() {
         // This method must be run in main thread because of NetServiceBrowser.
         DispatchQueue.main.async {
-            if let browser = self.netServiceBrowser {
-                browser.stop()
-            }
-
+            self.stopService()
             self.netServiceBrowser = NetServiceBrowser()
             self.netServiceBrowser?.delegate = self
             self.netServiceBrowser?.searchForServices(ofType: CLILoggingServiceInfo.type, inDomain: CLILoggingServiceInfo.domain)
+        }
+    }
+
+    public func stopService() {
+        if let browser = self.netServiceBrowser {
+            browser.stop()
         }
     }
 

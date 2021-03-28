@@ -11,3 +11,23 @@ public class CLILoggingServiceInfo: NSObject {
     public typealias InternalLogHandler = (DDLogLevel, String) -> Void
     public static var logHandler: InternalLogHandler?
 }
+
+@objcMembers
+public class CLILogger: NSObject, DDLogger {
+
+    @objc(sharedInstance)
+    public private(set) static var shared = CLILogger()
+    public var logFormatter: DDLogFormatter?
+    private var client: CLILoggingClient!
+
+    override private init() {
+        super.init()
+
+        client = CLILoggingClient()
+        client.searchService()
+    }
+
+    public func log(message logMessage: DDLogMessage) {
+        client.log(logMessage.message, flag: logMessage.flag, module: logMessage.file)
+    }
+}

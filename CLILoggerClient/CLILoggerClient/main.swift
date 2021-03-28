@@ -17,11 +17,18 @@ if (ProcessInfo().environment["TERM"] != nil) {
     DDLog.add(DDOSLogger.sharedInstance)
 }
 
+#if false
 let client = CLILoggingClient.shared
 
 client.searchService()
 
 client.log("This is \(Host.current().name ?? "a guest")")
 client.log("See", "you", "next", "time!")
+#else
+DDLog.add(CLILogger.shared)
 
+DDLogDebug("This is \(Host.current().name ?? "a guest")")
+DDLogVerbose("See you!")
+#endif
 RunLoop.main.run()
+
