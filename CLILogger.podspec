@@ -14,8 +14,7 @@ Pod::Spec.new do |spec|
   Like NSLogger, CLILogger display and extends the custom log message in your prefer terminal.
                    DESC
   spec.homepage     = "https://github.com/CLILogger/CLILogger"
-  spec.license      = "MIT"
-  # spec.license      = { :type => "MIT", :file => "FILE_LICENSE" }
+  spec.license      = { :type => "GPL", :file => "LICENSE.txt" }
 
   spec.author             = { "Wei Han" => "xingheng907@hotmail.com" }
   spec.social_media_url   = "https://twitter.com/xingheng907"

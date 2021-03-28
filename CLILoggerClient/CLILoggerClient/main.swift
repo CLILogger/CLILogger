@@ -17,7 +17,7 @@ if (ProcessInfo().environment["TERM"] != nil) {
     DDLog.add(DDOSLogger.sharedInstance)
 }
 
-let client = CLILoggingClient()
+let client = CLILoggingClient.shared
 
 client.searchService()
 

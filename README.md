@@ -28,8 +28,10 @@ OPTIONS:
 ##### Installation
 
 ```ruby
-pod 'CLILogger'
+pod 'CLILogger',, :configurations => ['Debug'], :git => 'https://github.com/CLILogger/CLILogger', :branch => 'master'
 ```
+
+> It still stays in alpha stage but it’s ready for common usages, I’ll be careful for `master`. :)
 
 
 
@@ -40,15 +42,14 @@ pod 'CLILogger'
   ```swift
   import CLILogger
   
-  // Initialize a client and start searching.
-  let client = CLILoggingClient()
+  let client = CLILoggingClient.shared
   client.searchService()
   
   // Send log to server.
   client.log("This is \(Host.current().name ?? "a guest")")
   client.log("See", "you", "next", "time!")
   ```
-
+  
 * Objective-C
 
   ```objective-c
@@ -135,4 +136,10 @@ Otherwise you will [get error](https://developer.apple.com/forums/thread/653316)
 * [CocoaAsyncSocket](https://github.com/robbiehanson/CocoaAsyncSocket)
 * [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack)
 * [Rainbow](https://github.com/onevcat/Rainbow)
+
+
+
+## License
+
+[GPL](./LICENSE.txt)
 
