@@ -17,6 +17,11 @@ default_platform(:mac)
 platform :mac do
   desc "Build a release executable file."
   lane :release do
+    cocoapods(
+      # clean_install: true,
+      podfile: "./Podfile"
+    )
+
     build_app(
       workspace: "CLILoggerServer.xcworkspace",
       configuration: "Release",
