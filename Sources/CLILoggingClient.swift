@@ -41,6 +41,7 @@ public class CLILoggingClient: NSObject {
     }
     private var writing: Bool = false
     private var pendingMessages: [CLILoggingEntity] = []
+    private var queueLocker: NSRecursiveLock = .init()
     private var dataQueue = DispatchQueue(label: "clilogger.client.serial.data.queue")
 
     public static var shared = CLILoggingClient()
@@ -71,7 +72,10 @@ public class CLILoggingClient: NSObject {
     }
 
     public func log(entity: CLILoggingEntity) {
+        queueLocker.lock()
         pendingMessages.append(entity)
+        queueLocker.unlock()
+
         dispatchPendingMessages()
     }
 
@@ -112,19 +116,19 @@ public class CLILoggingClient: NSObject {
             return
         }
 
-        if writing {
+        queueLocker.lock()
+
+        if pendingMessages.isEmpty || writing {
+            queueLocker.unlock()
             return
         }
 
+        writing = true
         log(.verbose, activity: "dispatching...\(pendingMessages.count) message(s) pending.")
-
-        if pendingMessages.isEmpty {
-            return
-        }
 
         let entity = pendingMessages.first!
 
-        writing = true
+        queueLocker.unlock()
         socket.write(entity.bufferData, withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag)
     }
 
@@ -247,11 +251,14 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
     }
 
     public func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
+        queueLocker.lock()
+
         if let index = pendingMessages.firstIndex(where: {$0.tag == tag}) {
             pendingMessages.remove(at: index)
         }
 
         writing = false
+        queueLocker.unlock()
         dispatchPendingMessages()
     }
 }
