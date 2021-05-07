@@ -92,14 +92,17 @@ struct App: ParsableCommand {
             }
 
             guard let filename = entity.filename else {
-                entity.output()
+                // Output log entity if filename is nil.
+                entity.output(by: config.formatter)
                 return
             }
 
             let mode = config.matchModule(name: filename)
 
             if mode == .whitelist || mode == .default {
-                entity.output()
+                entity.output(by: config.formatter)
+            } else {
+                // Nothing happens if it's in block list.
             }
         }
     }

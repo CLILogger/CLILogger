@@ -32,6 +32,53 @@ public struct Configuration {
         }
     }
 
+    public struct Formatter {
+        public var time: String?
+        public var format: String?
+
+        enum JSONKey: String {
+            case time = "Time"
+            case format = "Format"
+
+            var name: String {
+                return self.rawValue
+            }
+        }
+
+        enum ENVKey: String {
+            case time = "Time"
+            case flag = "Flag"
+            case filename = "Filename"
+            case line = "Line"
+            case function = "Function"
+            case message = "Message"
+
+            var name: String {
+                return self.rawValue
+            }
+        }
+
+        public init(_ dict: [String: Any?]) {
+            self.time = dict[JSONKey.time.name] as? String
+            self.format = dict[JSONKey.format.name] as? String
+        }
+
+        var dictionary: [String: Any?] {
+            return [JSONKey.time.name: time, JSONKey.format.name: format]
+        }
+
+        var timeFormatter: DateFormatter? {
+            if (time != nil) {
+                let formatter = DateFormatter()
+
+                formatter.dateFormat = time
+                return formatter
+            }
+
+            return nil
+        }
+    }
+
     public fileprivate(set) var projectName: String?
 
     public fileprivate(set) var logLevel: DDLogLevel = .verbose
@@ -39,6 +86,8 @@ public struct Configuration {
 
     public fileprivate(set) var serviceName: String?
     public fileprivate(set) var servicePort: UInt16?
+
+    public fileprivate(set) var formatter: Formatter?
 
     fileprivate var fileChangeObserver: DispatchSourceFileSystemObject?
 }
@@ -180,12 +229,13 @@ extension Configuration {
 extension Configuration {
 
     enum JSONKey: String {
-        case projectName = "ProjectName"
-        case logLevel = "LogLevel"
-        case whitelistModules = "WhitelistModules"
-        case blocklistModules = "BlocklistModules"
         case serviceName = "ServiceName"
         case servicePort = "ServicePort"
+        case projectName = "ProjectName"
+        case whitelistModules = "WhitelistModules"
+        case blocklistModules = "BlocklistModules"
+        case logLevel = "LogLevel"
+        case formatter = "Formatter"
 
         var name: String {
             return self.rawValue
@@ -204,11 +254,15 @@ extension Configuration {
             let whitelistModules: [Module] = (dict[JSONKey.whitelistModules.name] as! [String?]).map { Module(name: $0, mode: .whitelist) }
             let blocklistModules: [Module] = (dict[JSONKey.blocklistModules.name] as! [String?]).map { Module(name: $0, mode: .blocklist) }
 
+            serviceName = dict[JSONKey.serviceName.name] as? String
+            servicePort = dict[JSONKey.servicePort.name] as? UInt16
             projectName = dict[JSONKey.projectName.name] as? String
             logLevel = TitledLogFlag(rawValue: dict[JSONKey.logLevel.name] as! String)!.ddlogLevel
             modules += whitelistModules + blocklistModules
-            serviceName = dict[JSONKey.serviceName.name] as? String
-            servicePort = dict[JSONKey.servicePort.name] as? UInt16
+
+            if let formatterDict = dict[JSONKey.formatter.name] as? [String: Any?] {
+                formatter = Formatter(formatterDict)
+            }
         } catch {
             DDLogError("Failed to read configuration from file \(file) with error \(error)")
             return false
@@ -220,12 +274,13 @@ extension Configuration {
     @discardableResult
     private func save(to file: URL) -> Bool {
         let dict: [String: Any] = [
-            JSONKey.projectName.name: projectName ?? "",
-            JSONKey.logLevel.name: logLevel.title.name,
-            JSONKey.whitelistModules.name: whitelistModules.map { $0.name },
-            JSONKey.blocklistModules.name: blocklistModules.map { $0.name },
             JSONKey.serviceName.name: serviceName ?? "",
             JSONKey.servicePort.name: servicePort ?? 0,
+            JSONKey.projectName.name: projectName ?? "",
+            JSONKey.whitelistModules.name: whitelistModules.map { $0.name },
+            JSONKey.blocklistModules.name: blocklistModules.map { $0.name },
+            JSONKey.logLevel.name: logLevel.title.name,
+            JSONKey.formatter.name: formatter?.dictionary ?? [:],
         ]
 
         do {
