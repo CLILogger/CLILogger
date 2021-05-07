@@ -202,6 +202,10 @@ extension CLILoggingClient: NetServiceBrowserDelegate {
     public func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
         log(.info, activity: "\(#function), service: \(service)")
 
+        if let index = allAvailableServices.firstIndex(of: service) {
+            allAvailableServices.remove(at: index)
+        }
+
         if service == selectService {
             resetCurrentService()
             connectToNextAddress()
