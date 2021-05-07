@@ -24,8 +24,16 @@ extension CLILoggingEntity {
 
         result += " \(flag!.title.name.padding(toLength: 8, withPad: " ", startingAt: 0))"
 
-        if let mod = module {
-            result += " \(mod)"
+        if let filename = filename {
+            result += " \(filename)"
+        }
+
+        if let line = line {
+            result += " \(line)"
+        }
+
+        if let function = function {
+            result += " \(function)"
         }
 
         result += " \(message!)"

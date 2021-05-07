@@ -91,12 +91,12 @@ struct App: ParsableCommand {
                 return
             }
 
-            guard let module = entity.module else {
+            guard let filename = entity.filename else {
                 entity.output()
                 return
             }
 
-            let mode = config.matchModule(name: module)
+            let mode = config.matchModule(name: filename)
 
             if mode == .whitelist || mode == .default {
                 entity.output()

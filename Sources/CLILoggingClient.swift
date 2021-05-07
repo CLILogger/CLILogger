@@ -62,13 +62,13 @@ public class CLILoggingClient: NSObject {
         }
     }
 
-    public func log(_ args: String..., flag: DDLogFlag = .verbose, module: String? = nil) {
-        log(args, flag: flag, module:module)
+    public func log(_ args: String..., flag: DDLogFlag = .verbose, filename: String? = nil, line: UInt? = nil, function: String? = nil) {
+        log(args, flag: flag, filename: filename, line: line, function: function)
     }
 
-    public func log(_ args: [String], flag: DDLogFlag = .verbose, module: String? = nil) {
+    public func log(_ args: [String], flag: DDLogFlag = .verbose, filename: String? = nil, line: UInt? = nil, function: String? = nil) {
         let msg = args.joined(separator: " ")
-        log(entity: CLILoggingEntity(message: msg, flag: flag, module: module))
+        log(entity: CLILoggingEntity(message: msg, flag: flag, filename: filename, line: line, function: function))
     }
 
     public func log(entity: CLILoggingEntity) {
