@@ -87,15 +87,21 @@ extension CLILoggingEntity {
     public convenience init(data: Data) {
         self.init()
 
-        let object = try! JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
-        let dict = object as! [String: Any]
+        do {
+            let object = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
+            let dict = object as! [String: Any]
 
-        self.date = Date(timeIntervalSince1970: dict[JSONKey.date.name] as! TimeInterval)
-        self.flag = DDLogFlag(rawValue: dict[JSONKey.flag.name] as! UInt)
-        self.filename = dict[JSONKey.filename.name] as! String?
-        self.line = dict[JSONKey.line.name] as! UInt?
-        self.function = dict[JSONKey.function.name] as! String?
-        self.message = dict[JSONKey.message.name] as? String
+            date = Date(timeIntervalSince1970: dict[JSONKey.date.name] as! TimeInterval)
+            flag = DDLogFlag(rawValue: dict[JSONKey.flag.name] as! UInt)
+            filename = dict[JSONKey.filename.name] as! String?
+            line = dict[JSONKey.line.name] as! UInt?
+            function = dict[JSONKey.function.name] as! String?
+            message = dict[JSONKey.message.name] as? String
+
+            // print(">>> Received message [\(message ?? "")]")
+        } catch {
+            print("Exception: \(error)")
+        }
     }
 }
 
@@ -103,7 +109,7 @@ extension Data {
     public static var terminator: Data {
         get {
             // https://stackoverflow.com/a/24850996/1677041
-            let bytes = [0x0D, 0x0A, 0x0B, 0x0A]
+            let bytes = [0x1F, 0x20, 0x20, 0x1F]
             return Data(bytes: bytes, count: bytes.count)
         }
     }

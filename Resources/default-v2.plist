@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>ServiceName</key>
+    <string></string>
+    <key>ServicePort</key>
+    <integer>0</integer>
+    <key>ProjectName</key>
+    <string>default</string>
+    <key>WhitelistModules</key>
+    <array/>
+    <key>BlocklistModules</key>
+    <array>
+        <string>CLILoggingService</string>
+    </array>
+    <key>LogLevel</key>
+    <string>VERBOSE</string>
+    <key>Formatter</key>
+    <dict>
+        <key>Time</key>
+        <string>HH:mm:ss.SSS</string>
+        <key>Format</key>
+        <string>{{Time}} {{Flag}} {{Filename}}:{{Line}} {{Function}}&#10;{{Message}}</string>
+    </dict>
+    <key>Style</key>
+    <dict>
+        <key>Default</key>
+        <dict>
+            <key>Foreground</key>
+            <integer>90</integer>
+            <key>Background</key>
+            <integer>49</integer>
+            <key>Style</key>
+            <integer>0</integer>
+        </dict>
+        <key>Time</key>
+        <dict>
+            <key>Foreground</key>
+            <integer>90</integer>
+            <key>Style</key>
+            <integer>4</integer>
+        </dict>
+        <key>Message</key>
+        <dict>
+            <key>VERBOSE</key>
+            <dict>
+                <key>Foreground</key>
+                <integer>30</integer>
+            </dict>
+            <key>DEBUG</key>
+            <dict>
+                <key>Foreground</key>
+                <integer>32</integer>
+            </dict>
+            <key>INFO</key>
+            <dict>
+                <key>Foreground</key>
+                <integer>97</integer>
+            </dict>
+            <key>WARNING</key>
+            <dict>
+                <key>Foreground</key>
+                <integer>33</integer>
+            </dict>
+            <key>ERROR</key>
+            <dict>
+                <key>Foreground</key>
+                <integer>31</integer>
+            </dict>
+        </dict>
+    </dict>
+</dict>
+</plist>

@@ -55,6 +55,9 @@ struct App: ParsableCommand {
             // Xcode Console
             DDLog.add(DDOSLogger.sharedInstance, with: level)
         }
+
+        // Disable the line buffer of print.
+        setbuf(__stdoutp, nil)
     }
 
     func setupConfiguration() {
@@ -93,14 +96,14 @@ struct App: ParsableCommand {
 
             guard let filename = entity.filename else {
                 // Output log entity if filename is nil.
-                entity.output(by: config.formatter)
+                entity.output(by: config)
                 return
             }
 
             let mode = config.matchModule(name: filename)
 
             if mode == .whitelist || mode == .default {
-                entity.output(by: config.formatter)
+                entity.output(by: config)
             } else {
                 // Nothing happens if it's in block list.
             }

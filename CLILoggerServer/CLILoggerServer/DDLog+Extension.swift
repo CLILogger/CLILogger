@@ -42,6 +42,10 @@ enum TitledLogFlag: String {
         case .none: return .info // default value
         }
     }
+
+    static var allFlags: [Self] = [
+        .error, .warning, .info, .debug, .verbose,
+    ]
 }
 
 extension DDLogFlag {
@@ -57,7 +61,7 @@ extension DDLogFlag {
         }
     }
 
-    var color: Color {
+    var defaultForegroundColor: Color {
         switch self {
         case .error: return .red
         case .warning: return .yellow

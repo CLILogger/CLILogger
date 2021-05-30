@@ -7,6 +7,7 @@
 
 import Foundation
 import CocoaLumberjack
+import RainbowSwift
 
 // MARK: - Main Structure
 
@@ -45,7 +46,7 @@ public struct Configuration {
             }
         }
 
-        enum ENVKey: String {
+        enum FormatKey: String, CaseIterable {
             case time = "Time"
             case flag = "Flag"
             case filename = "Filename"
@@ -79,6 +80,56 @@ public struct Configuration {
         }
     }
 
+    struct ColorStyle {
+        var flag: DDLogFlag?
+        var foregroundColor: Color?
+        var backgroundColor: BackgroundColor?
+        var style: Style?
+
+        static var defaultFormatKey = "Default"
+
+        enum JSONKey: String {
+            case foreground = "Foreground"
+            case background = "Background"
+            case style = "Style"
+
+            var name: String {
+                return self.rawValue
+            }
+        }
+
+        init(_ dict: [String: Any?]) {
+            if let fgValue = dict[JSONKey.foreground.name] as? UInt8 {
+                foregroundColor = Color(rawValue: fgValue)
+            }
+
+            if let bgValue = dict[JSONKey.background.name] as? UInt8 {
+                backgroundColor = BackgroundColor(rawValue: bgValue)
+            }
+
+            if let styleValue = dict[JSONKey.style.name] as? UInt8 {
+                style = Style(rawValue: styleValue)
+            }
+        }
+
+        var dictionary: [String: Any?] {
+            if let flag = flag?.title, flag != .none {
+                return [flag.name: [
+                    JSONKey.foreground.name: foregroundColor?.value,
+                    JSONKey.background.name: backgroundColor?.value,
+                    JSONKey.style.name: style?.value,
+                    ]
+                ]
+            } else {
+                return [
+                    JSONKey.foreground.name: foregroundColor?.value,
+                    JSONKey.background.name: backgroundColor?.value,
+                    JSONKey.style.name: style?.value,
+                ]
+            }
+        }
+    }
+
     public fileprivate(set) var projectName: String?
 
     public fileprivate(set) var logLevel: DDLogLevel = .verbose
@@ -88,6 +139,8 @@ public struct Configuration {
     public fileprivate(set) var servicePort: UInt16?
 
     public fileprivate(set) var formatter: Formatter?
+
+    fileprivate(set) var style: [String: [TitledLogFlag: ColorStyle]]?
 
     fileprivate var fileChangeObserver: DispatchSourceFileSystemObject?
 }
@@ -224,6 +277,41 @@ extension Configuration {
     }
 }
 
+// MARK: - Color Style
+
+extension Configuration {
+
+    func applyMessage(_ message: String, for formatter: String, with flag: DDLogFlag) -> String {
+        guard let style = style else {
+            return message
+        }
+
+        guard let formatStyle = (style[formatter] ?? style[ColorStyle.defaultFormatKey]) else {
+            return message
+        }
+
+        guard let color = (formatStyle[flag.title] ?? formatStyle[.none]) else {
+            return message
+        }
+
+        var result = message
+
+        if let fgColor = color.foregroundColor, fgColor != .default {
+            result = result.applyingColor(fgColor)
+        }
+
+        if let bgColor = color.backgroundColor, bgColor != .default {
+            result = result.applyingBackgroundColor(bgColor)
+        }
+
+        if let style = color.style, style != .default {
+            result = result.applyingStyle(style)
+        }
+
+        return result
+    }
+}
+
 // MARK: - Load & Save
 
 extension Configuration {
@@ -236,6 +324,7 @@ extension Configuration {
         case blocklistModules = "BlocklistModules"
         case logLevel = "LogLevel"
         case formatter = "Formatter"
+        case style = "Style"
 
         var name: String {
             return self.rawValue
@@ -263,6 +352,27 @@ extension Configuration {
             if let formatterDict = dict[JSONKey.formatter.name] as? [String: Any?] {
                 formatter = Formatter(formatterDict)
             }
+
+            if let styleDict = dict[JSONKey.style.name] as? [String: Any?] {
+                style = [:]
+
+                for (format, formatValue) in styleDict {
+                    guard let formatDict = formatValue as? [String : Any?] else {
+                        continue
+                    }
+
+                    var styleDict: [TitledLogFlag: ColorStyle] = [:]
+
+                    for flag in TitledLogFlag.allFlags {
+                        if let colorDict = formatDict[flag.name] {
+                            styleDict[flag] = ColorStyle(colorDict as! [String : Any?])
+                        }
+                    }
+
+                    styleDict[.none] = ColorStyle(formatDict)
+                    style![format] = styleDict
+                }
+            }
         } catch {
             DDLogError("Failed to read configuration from file \(file) with error \(error)")
             return false
@@ -281,6 +391,7 @@ extension Configuration {
             JSONKey.blocklistModules.name: blocklistModules.map { $0.name },
             JSONKey.logLevel.name: logLevel.title.name,
             JSONKey.formatter.name: formatter?.dictionary ?? [:],
+            JSONKey.style.name: style?.mapValues({ $0.mapValues({ $0.dictionary }) }) ?? [:],
         ]
 
         do {
@@ -327,5 +438,7 @@ extension Configuration {
         modules = config.modules
         serviceName = config.serviceName
         servicePort = config.servicePort
+        formatter = config.formatter
+        style = config.style
     }
 }
