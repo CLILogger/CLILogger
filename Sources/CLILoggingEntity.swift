@@ -77,10 +77,8 @@ extension CLILoggingEntity {
                 dict[JSONKey.function.name] = function
             }
 
-            var data = try! JSONSerialization.data(withJSONObject: dict, options: .fragmentsAllowed)
-            data.append(Data.terminator)
-
-            return data
+            let data = try! JSONSerialization.data(withJSONObject: dict, options: .fragmentsAllowed)
+            return data.base64EncodedData()
         }
     }
 
@@ -88,7 +86,8 @@ extension CLILoggingEntity {
         self.init()
 
         do {
-            let object = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
+            let decodedData = Data(base64Encoded: data)!
+            let object = try JSONSerialization.jsonObject(with: decodedData, options: .fragmentsAllowed)
             let dict = object as! [String: Any]
 
             date = Date(timeIntervalSince1970: dict[JSONKey.date.name] as! TimeInterval)

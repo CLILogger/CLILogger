@@ -138,7 +138,11 @@ public class CLILoggingClient: NSObject {
         let entity = pendingMessages.first!
 
         queueLocker.unlock()
-        socket.write(entity.bufferData, withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag)
+
+        var data = entity.bufferData
+
+        data.append(Data.terminator)
+        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag)
     }
 
     private func resetCurrentService() {
