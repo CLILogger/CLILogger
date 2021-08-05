@@ -173,7 +173,7 @@ Otherwise you will [get this error](https://developer.apple.com/forums/thread/65
 
 #### Client
 
-- [ ] Support to choose logger service when multiple services in a same WLAN environment.
+- [x] Support to choose logger service when multiple services in a same WLAN environment.
 
 #### Server
 

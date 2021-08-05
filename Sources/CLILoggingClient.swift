@@ -9,6 +9,15 @@ import Foundation
 import CocoaAsyncSocket
 import CocoaLumberjack
 
+#if os(macOS)
+    #if canImport(AppKit) // macOS GUI application
+        import AppKit
+    #endif
+#elseif os(iOS)
+    import UIKit
+    let lastUsedLoggingServiceID = "cli-logger.last_used_logging_service"
+#endif
+
 // MARK: - CLILoggingClient
 
 @objcMembers
@@ -141,7 +150,7 @@ public class CLILoggingClient: NSObject {
         asyncSocket = nil
     }
 
-    private func askForChooseService(completion: (Int) -> Void) {
+    private func askForChooseService(completion: @escaping (Int) -> Void) {
         log(.verbose, activity: "\(#function)")
 
         let count = allAvailableServices.count
@@ -172,9 +181,40 @@ public class CLILoggingClient: NSObject {
             completion(choose)
             break
         }
-
         #elseif os(iOS)
-        assert(false, "implement not yet!")
+        let lastUsedServiceID = UserDefaults.standard.value(forKey: lastUsedLoggingServiceID)
+
+        if lastUsedServiceID != nil {
+            let service_id = allAvailableServices.firstIndex { $0.name == lastUsedServiceID as! String }
+
+            if service_id != NSNotFound {
+                completion(service_id!)
+                print("Using the last used service: \(lastUsedServiceID!)")
+                return
+            }
+        }
+
+        let rootVC = UIApplication.shared.keyWindow?.rootViewController
+        let alertVC = UIAlertController.init(title: "Choose your logging service", message: "Found multiple service around you, feel free to remember it.", preferredStyle: .alert)
+        let new_action: (NetService, Int, Bool) -> UIAlertAction = { service, index, remember in
+            let title = "\(service.name) \(remember ? "(use it always)" : "(only this time)")"
+            return UIAlertAction.init(title: title, style: .default, handler: { _ in
+                if remember {
+                    UserDefaults.standard.set(service.name, forKey: lastUsedLoggingServiceID)
+                }
+
+                completion(index)
+            })
+        }
+
+        for (index, service) in allAvailableServices.enumerated() {
+            alertVC.addAction(new_action(service, index, false))
+            alertVC.addAction(new_action(service, index, true))
+        }
+
+        alertVC.addAction(UIAlertAction.init(title: "Cancel", style: .cancel, handler: nil))
+
+        rootVC?.present(alertVC, animated: true, completion: nil)
         #endif
     }
 }
@@ -190,7 +230,7 @@ extension CLILoggingClient: NetServiceBrowserDelegate {
 
         if !moreComing && !connected {
             askForChooseService { (index) in
-                selectedServiceIndex = index
+                self.selectedServiceIndex = index
             }
         }
     }
