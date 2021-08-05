@@ -1,3 +1,10 @@
+//
+//  CLILogger.swift
+//  CLILogger
+//
+//  Created by WeiHan on 2021/3/7.
+//
+
 import Foundation
 import CocoaLumberjack
 

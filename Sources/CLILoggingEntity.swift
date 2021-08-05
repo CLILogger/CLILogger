@@ -1,6 +1,6 @@
 //
 //  CLILoggingEntity.swift
-//  CLILoggerServer
+//  CLILogger
 //
 //  Created by WeiHan on 2021/3/7.
 //
@@ -100,16 +100,6 @@ extension CLILoggingEntity {
             // print(">>> Received message [\(message ?? "")]")
         } catch {
             print("Exception: \(error)")
-        }
-    }
-}
-
-extension Data {
-    public static var terminator: Data {
-        get {
-            // https://stackoverflow.com/a/24850996/1677041
-            let bytes = [0x1F, 0x20, 0x20, 0x1F]
-            return Data(bytes: bytes, count: bytes.count)
         }
     }
 }

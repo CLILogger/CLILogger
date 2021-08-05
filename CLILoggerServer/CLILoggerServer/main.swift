@@ -89,6 +89,10 @@ struct App: ParsableCommand {
         service.serviceName = serviceName ?? config.serviceName ?? ""
         service.port = port ?? config.servicePort ?? 0
 
+        service.foundIncomingIdentity = { identity in
+            true
+        }
+
         service.foundIncomingMessage = { entity in
             guard (entity.flag.rawValue & config.logLevel.rawValue) != 0 else {
                 return

@@ -1,6 +1,6 @@
 //
 //  CLILoggingClient.swift
-//  CLILoggerClient
+//  CLILogger
 //
 //  Created by WeiHan on 2021/3/7.
 //
@@ -26,11 +26,11 @@ public class CLILoggingClient: NSObject {
     private var allAvailableServices: [NetService] = []
     private var selectedServiceIndex: Int = 0 {
         didSet {
-            selectService?.delegate = self
-            selectService?.resolve(withTimeout: CLILoggingServiceInfo.timeout)
+            selectedService?.delegate = self
+            selectedService?.resolve(withTimeout: CLILoggingServiceInfo.timeout)
         }
     }
-    private var selectService: NetService? {
+    private var selectedService: NetService? {
         guard selectedServiceIndex >= 0, allAvailableServices.count > 0 else {
             return nil
         }
@@ -41,6 +41,7 @@ public class CLILoggingClient: NSObject {
     public private(set) var connected: Bool = false {
         didSet {
             if connected {
+                sendIdentifyMessage()
                 dispatchPendingMessages()
             } else {
                 resetCurrentService()
@@ -49,6 +50,7 @@ public class CLILoggingClient: NSObject {
         }
     }
     private var writing: Bool = false
+    private var identityMessage: CLILoggingIdentity = .init()
     private var pendingMessages: [CLILoggingEntity] = []
     private var queueLocker: NSRecursiveLock = .init()
     private var dataQueue = DispatchQueue(label: "clilogger.client.serial.data.queue")
@@ -96,6 +98,7 @@ public class CLILoggingClient: NSObject {
         handler(level, activity)
     }
 
+    /// Try to connect the resolved server addresses one by one.
     private func connectToNextAddress() {
         var done = false
 
@@ -120,6 +123,22 @@ public class CLILoggingClient: NSObject {
         }
     }
 
+    /// Send the client's identity to server before using it.
+    private func sendIdentifyMessage() {
+        guard let socket = asyncSocket, connected, !identityMessage.sent else {
+            return
+        }
+
+        var data = Data.MessageType.hello.data
+
+        data.append(identityMessage.bufferData)
+        data.append(Data.terminator)
+        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: 0)
+
+        identityMessage.sent = true
+    }
+
+    /// Pick first message from the pending message queue and send it.
     private func dispatchPendingMessages() {
         guard let socket = asyncSocket, connected else {
             return
@@ -139,17 +158,20 @@ public class CLILoggingClient: NSObject {
 
         queueLocker.unlock()
 
-        var data = entity.bufferData
+        var data = Data.MessageType.entity.data
 
+        data.append(entity.bufferData)
         data.append(Data.terminator)
         socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag)
     }
 
+    /// Reset the net service, index, addresses and socket.
     private func resetCurrentService() {
         log(.verbose, activity: "Resetting service...")
 
-        allAvailableServices.removeAll()
+        selectedService?.delegate = nil
         selectedServiceIndex = 0
+        allAvailableServices.removeAll()
         serverAddresses.removeAll()
         asyncSocket = nil
     }
@@ -250,7 +272,7 @@ extension CLILoggingClient: NetServiceBrowserDelegate {
             allAvailableServices.remove(at: index)
         }
 
-        if service == selectService {
+        if service == selectedService {
             resetCurrentService()
             connectToNextAddress()
         }
@@ -308,5 +330,35 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
         writing = false
         queueLocker.unlock()
         dispatchPendingMessages()
+    }
+}
+
+// MARK: - Data
+
+public extension Data {
+
+    enum MessageType : String, CaseIterable {
+        case hello = "HI"
+        case entity = "EN"
+
+        public static var length: UInt8 {
+            2
+        }
+
+        public static func match(_ data: Data) -> MessageType? {
+            MessageType.allCases.first { $0.data == data }
+        }
+
+        var data: Data {
+            self.rawValue.data(using: .utf8)!
+        }
+    }
+
+    static var terminator: Data {
+        get {
+            // https://stackoverflow.com/a/24850996/1677041
+            let bytes = [0x1F, 0x20, 0x20, 0x1F]
+            return Data(bytes: bytes, count: bytes.count)
+        }
     }
 }

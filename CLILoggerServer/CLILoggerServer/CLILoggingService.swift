@@ -14,6 +14,8 @@ class CLILoggingService: NSObject {
     public var serviceName: String?
     public var port: UInt16 = 0
 
+    // Incoming identity handler
+    public var foundIncomingIdentity: ((CLILoggingIdentity) -> Bool)?
     // Incoming message handler
     public var foundIncomingMessage: ((CLILoggingEntity) -> Void)?
 
@@ -71,7 +73,7 @@ class CLILoggingService: NSObject {
         timer = DispatchSource.makeTimerSource(queue: dataQueue)
 
         timer?.setEventHandler { [unowned self] in
-            if self.reading && self.connectedSockets.count <= 0 {
+            if self.reading || self.connectedSockets.count <= 0 {
                 return
             }
 
@@ -133,12 +135,34 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
     func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
         DDLogVerbose("\(#function)")
 
-        let endIndex = data.endIndex - Data.terminator.endIndex + 1
-        let validData = data.subdata(in: 0..<data.index(before: endIndex))
-        let entity = CLILoggingEntity(data: validData)
+        let typeEndIndex = data.startIndex + Int(Data.MessageType.length)
+        let typeData = data.subdata(in: 0..<typeEndIndex)
+        let type = Data.MessageType.match(typeData)
 
-        if let handler = foundIncomingMessage {
-            handler(entity)
+        let endIndex = data.endIndex - Data.terminator.endIndex + 1
+        let messageData = data.subdata(in: typeEndIndex..<data.index(before: endIndex))
+
+        switch type {
+        case .hello:
+            let identity = CLILoggingIdentity(data: messageData)
+
+            if let handler = foundIncomingIdentity, !handler(identity) {
+                sock.delegate = nil
+                sock.disconnect()
+            }
+            break
+
+        case .entity:
+            let entity = CLILoggingEntity(data: messageData)
+
+            if let handler = foundIncomingMessage {
+                handler(entity)
+            }
+            break
+
+        default:
+            DDLogWarn("Found unexpected data message: \(data)")
+            break
         }
     }
 }
