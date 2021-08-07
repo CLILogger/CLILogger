@@ -13,6 +13,7 @@
 		68B368C02600542200F6C732 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68B368BF2600542200F6C732 /* Configuration.swift */; };
 		68B3699F2603367100F6C732 /* CLILoggingEntity+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68B3699E2603367100F6C732 /* CLILoggingEntity+Extension.swift */; };
 		68B369A32603445600F6C732 /* DDLog+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68B369A22603445600F6C732 /* DDLog+Extension.swift */; };
+		68EB180726BE754600B48A63 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 68EB180626BE754600B48A63 /* Yams */; };
 		890B47A0966FB6D71C4067DB /* libPods-CLILoggerServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2451DC1179D65F23D507259A /* libPods-CLILoggerServer.a */; };
 /* End PBXBuildFile section */
 
@@ -46,6 +47,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				685A91F525F3CB13002C6102 /* ArgumentParser in Frameworks */,
+				68EB180726BE754600B48A63 /* Yams in Frameworks */,
 				890B47A0966FB6D71C4067DB /* libPods-CLILoggerServer.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -119,6 +121,7 @@
 			name = CLILoggerServer;
 			packageProductDependencies = (
 				685A91F425F3CB13002C6102 /* ArgumentParser */,
+				68EB180626BE754600B48A63 /* Yams */,
 			);
 			productName = CLILoggerServer;
 			productReference = 685A91E225F34576002C6102 /* cli-logger */;
@@ -149,6 +152,7 @@
 			mainGroup = 685A91D925F34576002C6102;
 			packageReferences = (
 				685A91F325F3CB13002C6102 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
+				68EB180526BE754600B48A63 /* XCRemoteSwiftPackageReference "Yams" */,
 			);
 			productRefGroup = 685A91E325F34576002C6102 /* Products */;
 			projectDirPath = "";
@@ -373,6 +377,14 @@
 				minimumVersion = 0.4.0;
 			};
 		};
+		68EB180526BE754600B48A63 /* XCRemoteSwiftPackageReference "Yams" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpsim/Yams.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.6;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -380,6 +392,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 685A91F325F3CB13002C6102 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
+		};
+		68EB180626BE754600B48A63 /* Yams */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 68EB180526BE754600B48A63 /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
