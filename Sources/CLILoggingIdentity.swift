@@ -18,7 +18,9 @@ public struct CLILoggingIdentity {
     public private(set) var deviceID: String
     public private(set) var secret: String?
 
-    public var sent: Bool = false
+    public static var tagNumber: Int {
+        0
+    }
 
     public init() {
         #if os(macOS)
@@ -61,8 +63,8 @@ public struct CLILoggingIdentity {
     public var bufferData: Data {
         get {
             let dict: [String: Any] = [
-                JSONKey.hostName.name: hostName ?? "",
-                JSONKey.deviceID.name: deviceID ?? "",
+                JSONKey.hostName.name: hostName,
+                JSONKey.deviceID.name: deviceID,
                 JSONKey.secret.name: secret ?? "",
             ]
 

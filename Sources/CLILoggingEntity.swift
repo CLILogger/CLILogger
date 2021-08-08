@@ -20,6 +20,10 @@ public class CLILoggingEntity: NSObject {
     public private(set) var tag: Int = 0
     private static var index: Int = 0
 
+    public static var tagOffset: Int {
+        100
+    }
+
     fileprivate override init() {
         self.date = Date()
         self.flag = .verbose
@@ -38,7 +42,7 @@ public class CLILoggingEntity: NSObject {
         self.filename = filename
         self.line = line
         self.function = function
-        self.tag = Self.index
+        self.tag = (Self.index + Self.tagOffset) % Int(INT_MAX - 1)
     }
 }
 

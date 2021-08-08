@@ -51,6 +51,7 @@ public class CLILoggingClient: NSObject {
     }
     private var writing: Bool = false
     private var identityMessage: CLILoggingIdentity = .init()
+    private var identityApproved: Bool = false
     private var pendingMessages: [CLILoggingEntity] = []
     private var queueLocker: NSRecursiveLock = .init()
     private var dataQueue = DispatchQueue(label: "clilogger.client.serial.data.queue")
@@ -125,7 +126,7 @@ public class CLILoggingClient: NSObject {
 
     /// Send the client's identity to server before using it.
     private func sendIdentifyMessage() {
-        guard let socket = asyncSocket, connected, !identityMessage.sent else {
+        guard let socket = asyncSocket, connected else {
             return
         }
 
@@ -133,14 +134,12 @@ public class CLILoggingClient: NSObject {
 
         data.append(identityMessage.bufferData)
         data.append(Data.terminator)
-        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: 0)
-
-        identityMessage.sent = true
+        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: CLILoggingIdentity.tagNumber)
     }
 
     /// Pick first message from the pending message queue and send it.
     private func dispatchPendingMessages() {
-        guard let socket = asyncSocket, connected else {
+        guard let socket = asyncSocket, connected, identityApproved else {
             return
         }
 
@@ -170,9 +169,9 @@ public class CLILoggingClient: NSObject {
         log(.verbose, activity: "Resetting service...")
 
         selectedService?.delegate = nil
-        selectedServiceIndex = 0
         allAvailableServices.removeAll()
         serverAddresses.removeAll()
+        selectedServiceIndex = 0
         asyncSocket = nil
     }
 
@@ -291,7 +290,7 @@ extension CLILoggingClient: NetServiceDelegate {
         log(.info, activity: "\(#function)")
 
         if serverAddresses.isEmpty {
-            serverAddresses = sender.addresses!
+            serverAddresses = sender.addresses!.filter { !CLILoggingRecord.allRejectedAddresses.contains($0) }
         }
 
         if asyncSocket == nil {
@@ -312,6 +311,7 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
 
     public func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
         log(.verbose, activity: "\(#function), host: \(host), port: \(port)")
+        CLILoggingRecord.save(sock)
         connected = true
     }
 
@@ -320,14 +320,22 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
 
         if let error = err as NSError?, error.domain == GCDAsyncSocketErrorDomain,
            GCDAsyncSocketError.Code(rawValue: error.code) == GCDAsyncSocketError.closedError {
-            print("")
+            CLILoggingRecord.reject(sock)
+            log(.info, activity: "Rejected socket \(sock)")
         }
 
+        identityApproved = false
         connected = false
     }
 
     public func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
-        guard let index = pendingMessages.firstIndex(where: {$0.tag == tag}) else {
+        if tag == CLILoggingIdentity.tagNumber {
+            // Sent the 'hello' message.
+            identityApproved = true
+            return
+        }
+
+        guard tag >= CLILoggingEntity.tagOffset, let index = pendingMessages.firstIndex(where: {$0.tag == tag}) else {
             return
         }
 
@@ -367,5 +375,43 @@ public extension Data {
             let bytes = [0x1F, 0x20, 0x20, 0x1F]
             return Data(bytes: bytes, count: bytes.count)
         }
+    }
+}
+
+// MARK: - CLILoggingRecord
+
+fileprivate class CLILoggingRecord: Equatable {
+    var address: Data
+    weak var socket: GCDAsyncSocket?
+    var rejected: Bool = false
+
+    static var allRecords: [CLILoggingRecord] = []
+
+    init(_ address: Data, socket: GCDAsyncSocket) {
+        self.address = address
+        self.socket = socket
+    }
+
+    static func == (lhs: CLILoggingRecord, rhs: CLILoggingRecord) -> Bool {
+        lhs.address == rhs.address
+    }
+
+    static func save(_ socket: GCDAsyncSocket) {
+        let record = CLILoggingRecord(socket.connectedAddress!, socket: socket)
+
+        if !allRecords.contains(record) {
+            allRecords.append(record)
+        }
+    }
+
+    static func reject(_ socket: GCDAsyncSocket) {
+        let record = allRecords.first { $0.socket == socket }
+
+        assert(record != nil, "Rejecting a non-exist socket record!")
+        record?.rejected = true
+    }
+
+    static var allRejectedAddresses: [Data] {
+        allRecords.filter({ $0.rejected }).map { $0.address }
     }
 }
