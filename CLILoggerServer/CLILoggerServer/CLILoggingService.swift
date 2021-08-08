@@ -147,6 +147,7 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
             let identity = CLILoggingIdentity(data: messageData)
 
             if let handler = foundIncomingIdentity, !handler(identity) {
+                DDLogVerbose("Disconnecting the socket \(sock)")
                 sock.delegate = nil
                 sock.disconnect()
             }

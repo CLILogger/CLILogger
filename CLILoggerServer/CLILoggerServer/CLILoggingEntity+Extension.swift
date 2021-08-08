@@ -67,7 +67,7 @@ extension CLILoggingEntity {
         return formatter
     }
 
-    private func replacedValue(_ value: String, with config: Configuration) -> String {
+    private func replaceValue(_ value: String, with config: Configuration) -> String {
         let formatterKey = Configuration.Formatter.FormatKey.allCases.first { "{{\($0.name)}}" == value}
         var replacedValue = value
 
@@ -103,7 +103,7 @@ extension CLILoggingEntity {
             }
         }
 
-        return config.applyMessage(replacedValue, for: formatterKey?.name ?? "", with: flag)
+        return config.applyStyle(formatterKey?.name ?? "", for: replacedValue, with: flag)
     }
 
     private func customFormatMessage(_ config: Configuration) -> String {
@@ -123,7 +123,7 @@ extension CLILoggingEntity {
             let end = source.index(source.startIndex, offsetBy: r.upperBound)
             let unit = String(source[start..<end])
 
-            result += replacedValue(unit, with: config)
+            result += replaceValue(unit, with: config)
         }
 
         return result

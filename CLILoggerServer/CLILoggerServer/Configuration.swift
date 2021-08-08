@@ -8,6 +8,7 @@
 import Foundation
 import CocoaLumberjack
 import RainbowSwift
+import Yams
 
 // MARK: - Main Structure
 
@@ -37,9 +38,9 @@ public struct Configuration {
         public var time: String?
         public var format: String?
 
-        enum JSONKey: String {
-            case time = "Time"
-            case format = "Format"
+        enum YAMLKey: String {
+            case time = "time"
+            case format = "format"
 
             var name: String {
                 return self.rawValue
@@ -60,12 +61,8 @@ public struct Configuration {
         }
 
         public init(_ dict: [String: Any?]) {
-            self.time = dict[JSONKey.time.name] as? String
-            self.format = dict[JSONKey.format.name] as? String
-        }
-
-        var dictionary: [String: Any?] {
-            return [JSONKey.time.name: time, JSONKey.format.name: format]
+            self.time = dict[YAMLKey.time.name] as? String
+            self.format = dict[YAMLKey.format.name] as? String
         }
 
         var timeFormatter: DateFormatter? {
@@ -88,10 +85,10 @@ public struct Configuration {
 
         static var defaultFormatKey = "Default"
 
-        enum JSONKey: String {
-            case foreground = "Foreground"
-            case background = "Background"
-            case style = "Style"
+        enum YAMLKey: String {
+            case foreground = "foreground"
+            case background = "background"
+            case style = "style"
 
             var name: String {
                 return self.rawValue
@@ -99,33 +96,16 @@ public struct Configuration {
         }
 
         init(_ dict: [String: Any?]) {
-            if let fgValue = dict[JSONKey.foreground.name] as? UInt8 {
-                foregroundColor = Color(rawValue: fgValue)
+            if let value = dict[YAMLKey.foreground.name] as? Int {
+                foregroundColor = Color(rawValue: UInt8(value))
             }
 
-            if let bgValue = dict[JSONKey.background.name] as? UInt8 {
-                backgroundColor = BackgroundColor(rawValue: bgValue)
+            if let value = dict[YAMLKey.background.name] as? Int {
+                backgroundColor = BackgroundColor(rawValue: UInt8(value))
             }
 
-            if let styleValue = dict[JSONKey.style.name] as? UInt8 {
-                style = Style(rawValue: styleValue)
-            }
-        }
-
-        var dictionary: [String: Any?] {
-            if let flag = flag?.title, flag != .none {
-                return [flag.name: [
-                    JSONKey.foreground.name: foregroundColor?.value,
-                    JSONKey.background.name: backgroundColor?.value,
-                    JSONKey.style.name: style?.value,
-                    ]
-                ]
-            } else {
-                return [
-                    JSONKey.foreground.name: foregroundColor?.value,
-                    JSONKey.background.name: backgroundColor?.value,
-                    JSONKey.style.name: style?.value,
-                ]
+            if let value = dict[YAMLKey.style.name] as? Int {
+                style = Style(rawValue: UInt8(value))
             }
         }
     }
@@ -143,6 +123,21 @@ public struct Configuration {
     fileprivate(set) var style: [String: [TitledLogFlag: ColorStyle]]?
 
     fileprivate var fileChangeObserver: DispatchSourceFileSystemObject?
+
+    enum YAMLKey: String {
+        case serviceName = "service-name"
+        case servicePort = "service-port"
+        case projectName = "project-name"
+        case logLevel = "log-level"
+        case formatter = "formatter"
+        case style = "style"
+        case whitelistModules = "whitelist-modules"
+        case blocklistModules = "blocklist-modules"
+
+        var name: String {
+            self.rawValue
+        }
+    }
 }
 
 // MARK: - Modules
@@ -192,7 +187,7 @@ extension Configuration {
     }
 
     public static var defaultConfigFileExtension: String {
-        "plist"
+        "yml"
     }
 
     public static var defaultConfigFile: URL {
@@ -201,23 +196,69 @@ extension Configuration {
             .appendingPathExtension(defaultConfigFileExtension)
     }
 
-    @discardableResult
-    public func saveToDefaultFileIfNecessary() -> Bool {
-        let url = Self.defaultConfigFile
-        let path = url.path
+    private var defaultConfigurationContent: String {
+        """
+        # Configuration file for \(Self.appName) from https://github.com/CLILogger/CLILogger.
 
-        if FileManager.default.fileExists(atPath: path) {
-            return false
-        }
+        # Public service name for client to choose, defaults to current hostname.
+        \(YAMLKey.serviceName.name):
 
-        do {
-            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
-            save(to: url)
-        } catch {
-            DDLogError("Create intermediate directory for \(url) failed with error \(error)")
-        }
+        # Defaults to 0 means assigned by system automatically.
+        \(YAMLKey.servicePort.name): 0
 
-        return true
+        # Current configuration's identifier, used when launching service.
+        \(YAMLKey.projectName.name): default
+
+        # Log level from `DDLogLevel`, available options: ERROR, WARNING, INFO, DEBUG, VERBOSE, or leave it empty.
+        # Note that it's case-sensitive, use the uppercase always, same with below.
+        \(YAMLKey.logLevel.name): \(TitledLogFlag.verbose.name)
+
+        # All the formatter options:
+        \(YAMLKey.formatter.name):
+            # The message formatter, remember to wrap the keys with `{{` and `}}` always.
+            # Available formatter keys: \(Formatter.FormatKey.allCases.map({ $0.name }).reduce("", { $0 == "" ? $1 : $0 + ", " + $1 }))
+            \(Formatter.YAMLKey.format.name): "{{Time}} {{Flag}} {{Filename}}:{{Line}} {{Function}}\\n{{Message}}"
+            # The time formatter used for {{Time}} value.
+            # References: https://nsdateformatter.com/
+            \(Formatter.YAMLKey.time.name): "HH:mm:ss.SSS"
+
+        # Style configurations.
+        \(YAMLKey.style.name):
+            # This default style section will be used for all the format units if no other specific section configured.
+            \(ColorStyle.defaultFormatKey):
+                # See the value options from https://github.com/onevcat/Rainbow/blob/master/Sources/Color.swift.
+                \(ColorStyle.YAMLKey.foreground.name): \(Color.lightBlack.value)
+                # See the value options from https://github.com/onevcat/Rainbow/blob/master/Sources/BackgroundColor.swift.
+                \(ColorStyle.YAMLKey.background.name): \(BackgroundColor.default.value)
+                # See the value options from https://github.com/onevcat/Rainbow/blob/master/Sources/Style.swift.
+                \(ColorStyle.YAMLKey.style.name): \(Style.default.value)
+
+            # Apply the classical colorful style for message by log flag:
+            \(Formatter.FormatKey.message.name):
+                \(TitledLogFlag.verbose.name):
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.black.value)
+                \(TitledLogFlag.debug.name):
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.green.value)
+                \(TitledLogFlag.info.name):
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.lightWhite.value)
+                \(TitledLogFlag.warning.name):
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.yellow.value)
+                \(TitledLogFlag.error.name):
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.red.value)
+
+            # One more an example:
+            # \(Formatter.FormatKey.time.name):
+            #    \(ColorStyle.YAMLKey.foreground.name): \(Color.default.value)
+            #    \(ColorStyle.YAMLKey.style.name): \(Style.italic.value)
+
+        # Module whitelist:
+        \(YAMLKey.whitelistModules.name):
+            -
+
+        # Module blocklist:
+        \(YAMLKey.blocklistModules.name):
+            - \(String(describing: CLILoggingService.self))
+        """
     }
 }
 
@@ -281,7 +322,13 @@ extension Configuration {
 
 extension Configuration {
 
-    func applyMessage(_ message: String, for formatter: String, with flag: DDLogFlag) -> String {
+    /// Apply specified style and flag for the message string.
+    /// - Parameters:
+    ///   - formatter: target style formatter.
+    ///   - message: source message.
+    ///   - flag: log flag.
+    /// - Returns: formatted result message.
+    func applyStyle(_ formatter: String, for message: String, with flag: DDLogFlag) -> String {
         guard let style = style else {
             return message
         }
@@ -316,21 +363,9 @@ extension Configuration {
 
 extension Configuration {
 
-    enum JSONKey: String {
-        case serviceName = "ServiceName"
-        case servicePort = "ServicePort"
-        case projectName = "ProjectName"
-        case whitelistModules = "WhitelistModules"
-        case blocklistModules = "BlocklistModules"
-        case logLevel = "LogLevel"
-        case formatter = "Formatter"
-        case style = "Style"
-
-        var name: String {
-            return self.rawValue
-        }
-    }
-
+    /// Load from the specified configuration file and apply to current object.
+    /// - Parameter file: specified source configuration file.
+    /// - Returns: load successfully or not.
     @discardableResult
     public mutating func load(from file: URL) -> Bool {
         if !FileManager.default.fileExists(atPath: file.path) {
@@ -339,21 +374,23 @@ extension Configuration {
 
         do {
             let data = try Data(contentsOf: file)
-            let dict = try PropertyListSerialization.propertyList(from: data, options: .init(rawValue: 0), format: nil) as! [String: Any]
-            let whitelistModules: [Module] = (dict[JSONKey.whitelistModules.name] as! [String?]).map { Module(name: $0, mode: .whitelist) }
-            let blocklistModules: [Module] = (dict[JSONKey.blocklistModules.name] as! [String?]).map { Module(name: $0, mode: .blocklist) }
+            let yamlSource = String(data: data, encoding: .utf8)!
+            let dict = try Yams.load(yaml: yamlSource) as! [String: Any?]
 
-            serviceName = dict[JSONKey.serviceName.name] as? String
-            servicePort = dict[JSONKey.servicePort.name] as? UInt16
-            projectName = dict[JSONKey.projectName.name] as? String
-            logLevel = TitledLogFlag(rawValue: dict[JSONKey.logLevel.name] as! String)!.ddlogLevel
+            let whitelistModules: [Module] = (dict[YAMLKey.whitelistModules.name] as? [String])?.compactMap { Module(name: $0, mode: .whitelist) } ?? []
+            let blocklistModules: [Module] = (dict[YAMLKey.blocklistModules.name] as? [String])?.compactMap { Module(name: $0, mode: .blocklist) } ?? []
+
+            serviceName = dict[YAMLKey.serviceName.name] as? String
+            servicePort = UInt16(dict[YAMLKey.servicePort.name] as! Int)
+            projectName = dict[YAMLKey.projectName.name] as? String
+            logLevel = TitledLogFlag(rawValue: dict[YAMLKey.logLevel.name] as! String)!.ddlogLevel
             modules += whitelistModules + blocklistModules
 
-            if let formatterDict = dict[JSONKey.formatter.name] as? [String: Any?] {
+            if let formatterDict = dict[YAMLKey.formatter.name] as? [String: Any?] {
                 formatter = Formatter(formatterDict)
             }
 
-            if let styleDict = dict[JSONKey.style.name] as? [String: Any?] {
+            if let styleDict = dict[YAMLKey.style.name] as? [String: Any?] {
                 style = [:]
 
                 for (format, formatValue) in styleDict {
@@ -382,24 +419,19 @@ extension Configuration {
     }
 
     @discardableResult
-    private func save(to file: URL) -> Bool {
-        let dict: [String: Any] = [
-            JSONKey.serviceName.name: serviceName ?? "",
-            JSONKey.servicePort.name: servicePort ?? 0,
-            JSONKey.projectName.name: projectName ?? "",
-            JSONKey.whitelistModules.name: whitelistModules.map { $0.name },
-            JSONKey.blocklistModules.name: blocklistModules.map { $0.name },
-            JSONKey.logLevel.name: logLevel.title.name,
-            JSONKey.formatter.name: formatter?.dictionary ?? [:],
-            JSONKey.style.name: style?.mapValues({ $0.mapValues({ $0.dictionary }) }) ?? [:],
-        ]
+    public func saveToDefaultFileIfNecessary() -> Bool {
+        let url = Self.defaultConfigFile
+        let path = url.path
+
+        if FileManager.default.fileExists(atPath: path) {
+            return false
+        }
 
         do {
-            let data = try PropertyListSerialization.data(fromPropertyList: dict, format: .xml, options: .max)
-            try data.write(to: file)
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
+            try defaultConfigurationContent.write(to: url, atomically: true, encoding: .utf8)
         } catch {
-            DDLogError("Failed to save configuration with error \(error)")
-            return false
+            DDLogError("Write the default configuration to \(url) failed with error \(error)")
         }
 
         return true
@@ -410,6 +442,8 @@ extension Configuration {
 
 extension Configuration {
 
+    /// Observe the configuration file's changes from file system.
+    /// - Parameter handler: handler with new configuration object.
     public mutating func startObserve(handler: @escaping ((Configuration?) -> Void)) {
         let fileURL = Self.defaultConfigFile
         let descriptor = open(fileURL.path, O_EVTONLY)
@@ -429,10 +463,13 @@ extension Configuration {
         fileChangeObserver?.activate()
     }
 
+    /// Stop observing the configuration file.
     public func stopObserve() {
         fileChangeObserver?.cancel()
     }
 
+    /// Apply the properties of incoming configuration to current configuration.
+    /// - Parameter config: incoming configuration.
     public mutating func applyChanges(from config: Configuration) {
         logLevel = config.logLevel
         modules = config.modules
