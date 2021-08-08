@@ -27,6 +27,10 @@ client.log("See", "you", "next", "time!")
 #else
 DDLog.add(CLILogger.shared)
 
+CLILoggingServiceInfo.logHandler = { level, message in
+    print("[\(level)]: \(message)")
+}
+
 DDLogVerbose("Hello!")
 DDLogDebug("This is \(Host.current().name ?? "a guest")")
 DDLogInfo("The default internal log level is INFO")

@@ -14,16 +14,16 @@ import Foundation
 #endif
 
 public struct CLILoggingIdentity {
-    private(set) var hostName: String?
-    private(set) var deviceID: String?
-    private(set) var secret: String?
+    public private(set) var hostName: String
+    public private(set) var deviceID: String
+    public private(set) var secret: String?
 
     public var sent: Bool = false
 
     public init() {
         #if os(macOS)
-        hostName = Host.current().localizedName
-        deviceID = Self.hardwareUUID()
+        hostName = Host.current().localizedName ?? "<unknown device>"
+        deviceID = Self.hardwareUUID() ?? ""
         #elseif os(iOS)
         hostName = UIDevice.current.name
         deviceID = UIDevice.current.identifierForVendor
@@ -38,8 +38,8 @@ public struct CLILoggingIdentity {
             let object = try JSONSerialization.jsonObject(with: decodedData, options: .fragmentsAllowed)
             let dict = object as! [String: Any]
 
-            hostName = dict[JSONKey.hostName.name] as? String
-            deviceID = dict[JSONKey.deviceID.name] as? String
+            hostName = dict[JSONKey.hostName.name] as! String
+            deviceID = dict[JSONKey.deviceID.name] as! String
             secret = dict[JSONKey.secret.name] as? String
 
             // print(">>> Received identity [\(hostName ?? "")]")

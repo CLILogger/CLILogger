@@ -90,7 +90,14 @@ struct App: ParsableCommand {
         service.port = port ?? config.servicePort ?? 0
 
         service.foundIncomingIdentity = { identity in
-            true
+            DDLogInfo("Found new client identity: \(identity.hostName), \(identity.deviceID)")
+
+            if let deviceIDs = config.authorization?.blockDevices, deviceIDs.contains(identity.deviceID) {
+                DDLogInfo("Blocked device: \(identity.hostName)")
+                return false
+            }
+
+            return true
         }
 
         service.foundIncomingMessage = { entity in

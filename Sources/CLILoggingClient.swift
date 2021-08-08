@@ -317,6 +317,12 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
 
     public func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
         log(.warning, activity: "\(#function), error: \(err as Any)")
+
+        if let error = err as NSError?, error.domain == GCDAsyncSocketErrorDomain,
+           GCDAsyncSocketError.Code(rawValue: error.code) == GCDAsyncSocketError.closedError {
+            print("")
+        }
+
         connected = false
     }
 

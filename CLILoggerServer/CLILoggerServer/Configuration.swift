@@ -110,6 +110,25 @@ public struct Configuration {
         }
     }
 
+    struct Authorization {
+        var blockDevices: [String]
+        var secrets: [String]
+
+        enum YAMLKey: String {
+            case blockDevices = "block-devices"
+            case secrets = "secrets"
+
+            var name: String {
+                return self.rawValue
+            }
+        }
+
+        init(_ dict: [String: Any?]) {
+            blockDevices = dict[YAMLKey.blockDevices.name] as? [String] ?? []
+            secrets = dict[YAMLKey.secrets.name] as? [String] ?? []
+        }
+    }
+
     public fileprivate(set) var projectName: String?
 
     public fileprivate(set) var logLevel: DDLogLevel = .verbose
@@ -121,6 +140,7 @@ public struct Configuration {
     public fileprivate(set) var formatter: Formatter?
 
     fileprivate(set) var style: [String: [TitledLogFlag: ColorStyle]]?
+    fileprivate(set) var authorization: Authorization?
 
     fileprivate var fileChangeObserver: DispatchSourceFileSystemObject?
 
@@ -133,6 +153,7 @@ public struct Configuration {
         case style = "style"
         case whitelistModules = "whitelist-modules"
         case blocklistModules = "blocklist-modules"
+        case authorization = "authorization"
 
         var name: String {
             self.rawValue
@@ -258,6 +279,14 @@ extension Configuration {
         # Module blocklist:
         \(YAMLKey.blocklistModules.name):
             - \(String(describing: CLILoggingService.self))
+
+        # Authorization settings:
+        \(YAMLKey.authorization.name):
+            \(Authorization.YAMLKey.blockDevices.name):
+                - ""  # Block all the unknown devices
+            \(Authorization.YAMLKey.secrets.name):
+
+        # More settings are coming soon...
         """
     }
 }
@@ -410,6 +439,10 @@ extension Configuration {
                     style![format] = styleDict
                 }
             }
+
+            if let auth = dict[YAMLKey.authorization.name] as? [String: Any?] {
+                authorization = Authorization(auth)
+            }
         } catch {
             DDLogError("Failed to read configuration from file \(file) with error \(error)")
             return false
@@ -477,5 +510,6 @@ extension Configuration {
         servicePort = config.servicePort
         formatter = config.formatter
         style = config.style
+        authorization = config.authorization
     }
 }
