@@ -90,13 +90,21 @@ struct App: ParsableCommand {
         service.port = port ?? config.servicePort ?? 0
 
         service.foundIncomingIdentity = { identity in
-            DDLogInfo("Found new client identity: \(identity.hostName), \(identity.deviceID)")
+            DDLogVerbose("Found new client identity: \(identity.hostName), \(identity.deviceID)")
 
-            if let deviceIDs = config.authorization?.blockDevices, deviceIDs.contains(identity.deviceID) {
-                DDLogInfo("Blocked device: \(identity.hostName)")
+            if let deviceIDs = config.authorization?.blockDevices,
+               !deviceIDs.isEmpty, deviceIDs.contains(identity.deviceID) {
+                DDLogVerbose("Blocke client [\(identity.hostName)] due to blocked device identifier!")
                 return false
             }
 
+            if let secrets = config.authorization?.secrets.filter({ $0.count > 0 }),
+                let secret = identity.secret, !secrets.isEmpty, !secrets.contains(secret) {
+                DDLogVerbose("Blocke client [\(identity.hostName)] due to missing valid secret!")
+                return false
+            }
+
+            DDLogInfo("Welcome \(identity.hostName)!")
             return true
         }
 

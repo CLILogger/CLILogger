@@ -282,9 +282,14 @@ extension Configuration {
 
         # Authorization settings:
         \(YAMLKey.authorization.name):
+            # These devices will be blocked directly, it enables if there are any valid device identifiers.
+            # Leave a single empty string here to disable the checking.
             \(Authorization.YAMLKey.blockDevices.name):
                 - ""  # Block all the unknown devices
+            # These secrets will be accepted directly, it enables if there are any valid secrets.
+            # Leave a single empty string here to disable the checking.
             \(Authorization.YAMLKey.secrets.name):
+                - ""
 
         # More settings are coming soon...
         """

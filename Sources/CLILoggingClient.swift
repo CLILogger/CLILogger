@@ -42,7 +42,6 @@ public class CLILoggingClient: NSObject {
         didSet {
             if connected {
                 sendIdentifyMessage()
-                dispatchPendingMessages()
             } else {
                 resetCurrentService()
                 searchService()
@@ -51,7 +50,16 @@ public class CLILoggingClient: NSObject {
     }
     private var writing: Bool = false
     private var identityMessage: CLILoggingIdentity = .init()
-    private var identityApproved: Bool = false
+    private var identityApproved: Bool = false {
+        didSet {
+            if identityApproved {
+                dispatchPendingMessages()
+            } else {
+                // When identify get rejected, the socket will be disconnected, too.
+                // Do nothing here.
+            }
+        }
+    }
     private var pendingMessages: [CLILoggingEntity] = []
     private var queueLocker: NSRecursiveLock = .init()
     private var dataQueue = DispatchQueue(label: "clilogger.client.serial.data.queue")
@@ -320,11 +328,12 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
 
         if let error = err as NSError?, error.domain == GCDAsyncSocketErrorDomain,
            GCDAsyncSocketError.Code(rawValue: error.code) == GCDAsyncSocketError.closedError {
-            CLILoggingRecord.reject(sock)
             log(.info, activity: "Rejected socket \(sock)")
+
+            CLILoggingRecord.reject(sock)
+            identityApproved = false
         }
 
-        identityApproved = false
         connected = false
     }
 

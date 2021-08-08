@@ -118,18 +118,17 @@ extension CLILoggingService: NetServiceDelegate {
 extension CLILoggingService: GCDAsyncSocketDelegate {
 
     func socket(_ sock: GCDAsyncSocket, didAcceptNewSocket newSocket: GCDAsyncSocket) {
-        // Save the incoming host name as its alias in its lifecycle.
-        newSocket.name = newSocket.connectedHost ?? "Unknown"
-
-        DDLogInfo("\(newSocket.name!) connected!")
+        DDLogVerbose("\(newSocket.connectedHost ?? "Unknown") accepted!")
         connectedSockets.append(newSocket)
     }
 
+    func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
+        DDLogVerbose("\(sock.connectedHost ?? "Unknown") connected!")
+    }
+
     func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
-        DDLogInfo("\(sock.name!) disconnected!")
-        connectedSockets.removeAll { (socket) -> Bool in
-            sock == socket
-        }
+        DDLogInfo("\(sock.connectedHost ?? "Unknown") disconnected!")
+        connectedSockets.removeAll { $0 == sock }
     }
 
     func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
@@ -165,14 +164,5 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
             DDLogWarn("Found unexpected data message: \(data)")
             break
         }
-    }
-}
-
-extension GCDAsyncSocket {
-
-    // Bind the name info to `userData`.
-    fileprivate var name: String? {
-        get { return userData as? String }
-        set { userData = newValue }
     }
 }
