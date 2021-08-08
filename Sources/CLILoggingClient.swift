@@ -321,14 +321,15 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
     }
 
     public func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
-        queueLocker.lock()
-
-        if let index = pendingMessages.firstIndex(where: {$0.tag == tag}) {
-            pendingMessages.remove(at: index)
+        guard let index = pendingMessages.firstIndex(where: {$0.tag == tag}) else {
+            return
         }
 
+        queueLocker.lock()
+        pendingMessages.remove(at: index)
         writing = false
         queueLocker.unlock()
+
         dispatchPendingMessages()
     }
 }
