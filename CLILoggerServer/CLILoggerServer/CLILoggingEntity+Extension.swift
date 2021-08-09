@@ -67,6 +67,36 @@ extension CLILoggingEntity {
         return formatter
     }
 
+    private var rawMessage: String {
+        var result = ""
+
+        if let date = date {
+            result = result + Self.defaultTimeFormatter.string(from: date)
+        }
+
+        if let flag = flag {
+            result = result + " " + flag.title.name.padding(toLength: 7, withPad: " ", startingAt: 0)
+        }
+
+        if let filename = filename {
+            result = result + " " + filename
+
+            if let line = line {
+                result = result + ":" + "\(line)"
+            }
+        }
+
+        if let function = function {
+            result = result + " " + function
+        }
+
+        if let message = message {
+            result = result + " " + message
+        }
+
+        return result
+    }
+
     private func replaceValue(_ value: String, with config: Configuration) -> String {
         let formatterKey = Configuration.Formatter.FormatKey.allCases.first { "{{\($0.name)}}" == value}
         var replacedValue = value
@@ -107,7 +137,10 @@ extension CLILoggingEntity {
     }
 
     private func customFormatMessage(_ config: Configuration) -> String {
-        let formatter = config.formatter!
+        guard let formatter = config.formatter else {
+            return rawMessage
+        }
+
         let source = formatter.format ?? ""
 
         let regex = try! NSRegularExpression(pattern: "\\{\\{\\w+\\}\\}")
