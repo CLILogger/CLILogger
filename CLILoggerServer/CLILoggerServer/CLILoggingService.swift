@@ -127,7 +127,8 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
     }
 
     func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
-        DDLogInfo("\(sock.connectedHost ?? "Unknown") disconnected!")
+        let identity = sock.userData as! CLILoggingIdentity?
+        DDLogInfo("Bye! \(identity?.hostName ?? "Unknown")")
         connectedSockets.removeAll { $0 == sock }
     }
 
@@ -143,7 +144,16 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
 
         switch type {
         case .hello:
-            let identity = CLILoggingIdentity(data: messageData)
+            assert(tag == CLILoggingIdentity.tagNumber)
+            var identity = CLILoggingIdentity(data: messageData)
+
+            if let device = config.deviceAliases?.first(where: { $0.identifier == identity.deviceID }),
+               let alias = device.alias {
+                DDLogVerbose("Renaming device \(identity.hostName)[\(identity.deviceID)] to \(alias)")
+                identity.rename(to: alias)
+            }
+
+            sock.userData = identity
 
             if let handler = foundIncomingIdentity, !handler(identity) {
                 DDLogVerbose("Disconnecting the socket \(sock)")
@@ -153,6 +163,7 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
             break
 
         case .entity:
+            assert(tag >= CLILoggingEntity.tagOffset)
             let entity = CLILoggingEntity(data: messageData)
 
             if let handler = foundIncomingMessage {
@@ -161,7 +172,7 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
             break
 
         default:
-            DDLogWarn("Found unexpected data message: \(data)")
+            DDLogError("Found unexpected data message: \(data)")
             break
         }
     }

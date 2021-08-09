@@ -85,4 +85,8 @@ public struct CLILoggingIdentity {
         return IORegistryEntryCreateCFProperty(platformExpert, kIOPlatformUUIDKey as CFString, kCFAllocatorDefault, 0).takeRetainedValue() as? String
     }
     #endif
+
+    public mutating func rename(to newHostName: String) {
+        hostName = newHostName
+    }
 }

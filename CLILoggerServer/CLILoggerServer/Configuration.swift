@@ -129,6 +129,24 @@ public struct Configuration {
         }
     }
 
+    struct DeviceAlias {
+        var identifier: String?
+        var alias: String?
+
+        enum YAMLKey: String {
+            case identifier, alias
+
+            var name: String {
+                return self.rawValue
+            }
+        }
+
+        init(_ dict: [String?: String?]) {
+            identifier = dict[YAMLKey.identifier.name] as? String
+            alias = dict[YAMLKey.alias.name] as? String
+        }
+    }
+
     public fileprivate(set) var projectName: String?
 
     public fileprivate(set) var logLevel: DDLogLevel = .verbose
@@ -141,6 +159,7 @@ public struct Configuration {
 
     fileprivate(set) var style: [String: [TitledLogFlag: ColorStyle]]?
     fileprivate(set) var authorization: Authorization?
+    fileprivate(set) var deviceAliases: [DeviceAlias]?
 
     fileprivate var fileChangeObserver: DispatchSourceFileSystemObject?
 
@@ -154,6 +173,7 @@ public struct Configuration {
         case whitelistModules = "whitelist-modules"
         case blocklistModules = "blocklist-modules"
         case authorization = "authorization"
+        case deviceAliases = "device-aliases"
 
         var name: String {
             self.rawValue
@@ -222,9 +242,11 @@ extension Configuration {
         # Configuration file for \(Self.appName) from https://github.com/CLILogger/CLILogger.
 
         # Public service name for client to choose, defaults to current hostname.
+        # Restarting the logging service is required if updates.
         \(YAMLKey.serviceName.name):
 
         # Defaults to 0 means assigned by system automatically.
+        # Restarting the logging service is required if updates.
         \(YAMLKey.servicePort.name): 0
 
         # Current configuration's identifier, used when launching service.
@@ -268,6 +290,7 @@ extension Configuration {
                     \(ColorStyle.YAMLKey.foreground.name): \(Color.red.value)
 
             # One more an example:
+            # Set separated font style for the time unit.
             # \(Formatter.FormatKey.time.name):
             #    \(ColorStyle.YAMLKey.foreground.name): \(Color.default.value)
             #    \(ColorStyle.YAMLKey.style.name): \(Style.italic.value)
@@ -290,6 +313,11 @@ extension Configuration {
             # Leave a single empty string here to disable the checking.
             \(Authorization.YAMLKey.secrets.name):
                 - ""
+
+        # Device aliases:
+        \(YAMLKey.deviceAliases.name):
+            - \(DeviceAlias.YAMLKey.identifier.name):
+              \(DeviceAlias.YAMLKey.alias.name):
 
         # More settings are coming soon...
         """
@@ -448,6 +476,10 @@ extension Configuration {
             if let auth = dict[YAMLKey.authorization.name] as? [String: Any?] {
                 authorization = Authorization(auth)
             }
+
+            if let aliases = dict[YAMLKey.deviceAliases.name] as? [[String?: String?]] {
+                deviceAliases = aliases.map({ DeviceAlias($0) }).filter({ $0.identifier?.count ?? 0 > 0 && $0.alias?.count ?? 0 > 0 })
+            }
         } catch {
             DDLogError("Failed to read configuration from file \(file) with error \(error)")
             return false
@@ -516,5 +548,6 @@ extension Configuration {
         formatter = config.formatter
         style = config.style
         authorization = config.authorization
+        deviceAliases = config.deviceAliases
     }
 }
