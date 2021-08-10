@@ -28,7 +28,7 @@ public struct CLILoggingIdentity {
         deviceID = Self.hardwareUUID() ?? ""
         #elseif os(iOS)
         hostName = UIDevice.current.name
-        deviceID = UIDevice.current.identifierForVendor
+        deviceID = UIDevice.current.identifierForVendor?.uuidString ?? ""
         #endif
     }
 
