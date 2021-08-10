@@ -144,7 +144,6 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
 
         switch type {
         case .hello:
-            assert(tag == CLILoggingIdentity.tagNumber)
             var identity = CLILoggingIdentity(data: messageData)
 
             if let device = config.deviceAliases?.first(where: { $0.identifier == identity.deviceID }),
@@ -163,7 +162,6 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
             break
 
         case .entity:
-            assert(tag >= CLILoggingEntity.tagOffset)
             let entity = CLILoggingEntity(data: messageData)
 
             if let handler = foundIncomingMessage {
