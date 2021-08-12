@@ -54,6 +54,7 @@ public struct Configuration {
             case line = "Line"
             case function = "Function"
             case message = "Message"
+            case device = "Device"
 
             var name: String {
                 return self.rawValue
@@ -147,6 +148,16 @@ public struct Configuration {
         }
     }
 
+    enum DeviceShowOption: String, CaseIterable {
+        case never
+        case automatic
+        case always
+
+        var name: String {
+            self.rawValue
+        }
+    }
+
     public fileprivate(set) var projectName: String?
 
     public fileprivate(set) var logLevel: DDLogLevel = .verbose
@@ -160,6 +171,7 @@ public struct Configuration {
     fileprivate(set) var style: [String: [TitledLogFlag: ColorStyle]]?
     fileprivate(set) var authorization: Authorization?
     fileprivate(set) var deviceAliases: [DeviceAlias]?
+    fileprivate(set) var deviceShowOption: DeviceShowOption = .automatic
 
     fileprivate var fileChangeObserver: DispatchSourceFileSystemObject?
 
@@ -174,6 +186,7 @@ public struct Configuration {
         case blocklistModules = "blocklist-modules"
         case authorization = "authorization"
         case deviceAliases = "device-aliases"
+        case showDevice = "show-device"
 
         var name: String {
             self.rawValue
@@ -260,7 +273,7 @@ extension Configuration {
         \(YAMLKey.formatter.name):
             # The message formatter, remember to wrap the keys with `{{` and `}}` always.
             # Available formatter keys: \(Formatter.FormatKey.allCases.map({ $0.name }).reduce("", { $0 == "" ? $1 : $0 + ", " + $1 }))
-            \(Formatter.YAMLKey.format.name): "{{Time}} {{Flag}} {{Filename}}:{{Line}} {{Function}}\\n{{Message}}"
+            \(Formatter.YAMLKey.format.name): "{{Time}} {{Device}}{{Flag}} {{Filename}}:{{Line}} {{Function}}\\n{{Message}}"
             # The time formatter used for {{Time}} value.
             # References: https://nsdateformatter.com/
             \(Formatter.YAMLKey.time.name): "HH:mm:ss.SSS"
@@ -318,6 +331,14 @@ extension Configuration {
         \(YAMLKey.deviceAliases.name):
             - \(DeviceAlias.YAMLKey.identifier.name):
               \(DeviceAlias.YAMLKey.alias.name):
+
+        # Show device name in logging message or not, defaults to \(DeviceShowOption.automatic.name).
+        # Notes: to separate device name from other format units, it will always append a empty space to the ending of real device name.
+        # Available options:
+        #   \(DeviceShowOption.never.name): show never, even {{\(Formatter.FormatKey.device.name)}} configured.
+        #   \(DeviceShowOption.automatic.name): show when there are two at least connected devices.
+        #   \(DeviceShowOption.always.name): show always.
+        \(YAMLKey.showDevice.name): \(DeviceShowOption.automatic.name)
 
         # More settings are coming soon...
         """
@@ -480,6 +501,10 @@ extension Configuration {
             if let aliases = dict[YAMLKey.deviceAliases.name] as? [[String?: String?]] {
                 deviceAliases = aliases.map({ DeviceAlias($0) }).filter({ $0.identifier?.count ?? 0 > 0 && $0.alias?.count ?? 0 > 0 })
             }
+
+            if let value = dict[YAMLKey.showDevice.name] as? String, let option = DeviceShowOption(rawValue: value) {
+                deviceShowOption = option
+            }
         } catch {
             DDLogError("Failed to read configuration from file \(file) with error \(error)")
             return false
@@ -549,5 +574,6 @@ extension Configuration {
         style = config.style
         authorization = config.authorization
         deviceAliases = config.deviceAliases
+        deviceShowOption = config.deviceShowOption
     }
 }

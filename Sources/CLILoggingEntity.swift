@@ -17,6 +17,9 @@ public class CLILoggingEntity: NSObject {
     public private(set) var function: String?
     public private(set) var message: String!
 
+    public var identity: CLILoggingIdentity!
+    public var deviceName: String!
+
     public private(set) var tag: Int = 0
     private static var index: Int = 0
 

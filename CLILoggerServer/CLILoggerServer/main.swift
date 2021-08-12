@@ -127,6 +127,27 @@ struct App: ParsableCommand {
                 // Nothing happens if it's in block list.
             }
         }
+
+        service.resolveDeviceName = {[weak service] entity in
+            guard let identity = entity.identity else {
+                return ""
+            }
+
+            var name = identity.hostName
+
+            switch config.deviceShowOption {
+            case .never:
+                name = ""
+                break
+            case .automatic:
+                name = service!.connectedSocketCount <= 1 ? "" : name
+                break
+            case .always:
+                break
+            }
+
+            return name
+        }
     }
 }
 

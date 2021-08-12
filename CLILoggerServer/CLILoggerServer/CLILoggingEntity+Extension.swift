@@ -130,6 +130,11 @@ extension CLILoggingEntity {
             case .message:
                 replacedValue = message
                 break
+
+            case .device:
+                // Append a empty space to the ending of device name to separate it from other format units.
+                replacedValue = "\(deviceName!) "
+                break
             }
         }
 

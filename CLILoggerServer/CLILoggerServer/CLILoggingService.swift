@@ -18,11 +18,16 @@ class CLILoggingService: NSObject {
     public var foundIncomingIdentity: ((CLILoggingIdentity) -> Bool)?
     // Incoming message handler
     public var foundIncomingMessage: ((CLILoggingEntity) -> Void)?
+    public var resolveDeviceName: ((CLILoggingEntity) -> String)?
 
     // Service and sockets info.
     private var netService: NetService!
     private var asyncSocket: GCDAsyncSocket!
     private var connectedSockets: [GCDAsyncSocket] = []
+
+    public var connectedSocketCount: Int {
+        connectedSockets.filter({ $0.identified }).count
+    }
 
     // Read the incoming message entities repeatly.
     private var timer: DispatchSourceTimer?
@@ -127,8 +132,7 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
     }
 
     func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
-        let identity = sock.userData as! CLILoggingIdentity?
-        DDLogInfo("Bye! \(identity?.hostName ?? "Unknown")")
+        DDLogInfo("Bye! \(sock.identity?.hostName ?? "Unknown")")
         connectedSockets.removeAll { $0 == sock }
     }
 
@@ -152,17 +156,24 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
                 identity.rename(to: alias)
             }
 
-            sock.userData = identity
-
             if let handler = foundIncomingIdentity, !handler(identity) {
                 DDLogVerbose("Disconnecting the socket \(sock)")
                 sock.delegate = nil
                 sock.disconnect()
+            } else {
+                sock.identity = identity
             }
             break
 
         case .entity:
             let entity = CLILoggingEntity(data: messageData)
+
+            assert(sock.identity != nil, "Didn't find the identity of current socket!")
+            entity.identity = sock.identity
+
+            if let resolver = resolveDeviceName {
+                entity.deviceName = resolver(entity)
+            }
 
             if let handler = foundIncomingMessage {
                 handler(entity)
@@ -173,5 +184,17 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
             DDLogError("Found unexpected data message: \(data)")
             break
         }
+    }
+}
+
+extension GCDAsyncSocket {
+
+    var identity: CLILoggingIdentity? {
+        get { self.userData as! CLILoggingIdentity? }
+        set { self.userData = newValue }
+    }
+
+    var identified: Bool {
+        identity != nil
     }
 }
