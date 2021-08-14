@@ -158,6 +158,24 @@ public struct Configuration {
         }
     }
 
+    struct LoggingFile {
+        var enabled: Bool
+        var directory: String?
+
+        enum YAMLKey: String {
+            case enabled, directory
+
+            var name: String {
+                return self.rawValue
+            }
+        }
+
+        init(_ dict: [String?: Any?]) {
+            enabled = dict[YAMLKey.enabled.name] as? Bool ?? false
+            directory = dict[YAMLKey.directory.name] as? String
+        }
+    }
+
     public fileprivate(set) var projectName: String?
 
     public fileprivate(set) var logLevel: DDLogLevel = .verbose
@@ -172,6 +190,7 @@ public struct Configuration {
     fileprivate(set) var authorization: Authorization?
     fileprivate(set) var deviceAliases: [DeviceAlias]?
     fileprivate(set) var deviceShowOption: DeviceShowOption = .automatic
+    fileprivate(set) var loggingFile: LoggingFile?
 
     fileprivate var fileChangeObserver: DispatchSourceFileSystemObject?
 
@@ -187,6 +206,7 @@ public struct Configuration {
         case authorization = "authorization"
         case deviceAliases = "device-aliases"
         case showDevice = "show-device"
+        case loggingFile = "logging-file"
 
         var name: String {
             self.rawValue
@@ -339,6 +359,11 @@ extension Configuration {
         #   \(DeviceShowOption.automatic.name): show when there are two at least connected devices.
         #   \(DeviceShowOption.always.name): show always.
         \(YAMLKey.showDevice.name): \(DeviceShowOption.automatic.name)
+
+        # Redirect all the logging messages to file under the following specified directory.
+        \(YAMLKey.loggingFile.name):
+            \(LoggingFile.YAMLKey.enabled.name): false
+            \(LoggingFile.YAMLKey.directory.name): \(NSHomeDirectory())/Library/Logs/\(Self.appName)/
 
         # More settings are coming soon...
         """
@@ -505,6 +530,10 @@ extension Configuration {
             if let value = dict[YAMLKey.showDevice.name] as? String, let option = DeviceShowOption(rawValue: value) {
                 deviceShowOption = option
             }
+
+            if let fileConfig = dict[YAMLKey.loggingFile.name] as? [String?: Any?] {
+                loggingFile = LoggingFile(fileConfig)
+            }
         } catch {
             DDLogError("Failed to read configuration from file \(file) with error \(error)")
             return false
@@ -575,5 +604,6 @@ extension Configuration {
         authorization = config.authorization
         deviceAliases = config.deviceAliases
         deviceShowOption = config.deviceShowOption
+        loggingFile = config.loggingFile
     }
 }

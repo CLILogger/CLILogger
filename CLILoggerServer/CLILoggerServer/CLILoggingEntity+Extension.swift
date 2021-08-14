@@ -170,4 +170,19 @@ extension CLILoggingEntity {
     public func output(by config: Configuration) {
         print(customFormatMessage(config))
     }
+
+    public func save(by config: Configuration) -> Error? {
+        guard var data = rawMessage.data(using: .utf8) else {
+            return nil
+        }
+
+        data.append("\n".data(using: .utf8)!)
+
+        var error: Error? = nil
+        guard let fileURL = identity.getLogFile(by: config, err: &error) else {
+            return error
+        }
+
+        return data.append(to: fileURL)
+    }
 }

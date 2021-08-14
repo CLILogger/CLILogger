@@ -14,6 +14,7 @@
 		68B3699F2603367100F6C732 /* CLILoggingEntity+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68B3699E2603367100F6C732 /* CLILoggingEntity+Extension.swift */; };
 		68B369A32603445600F6C732 /* DDLog+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68B369A22603445600F6C732 /* DDLog+Extension.swift */; };
 		68EB180726BE754600B48A63 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 68EB180626BE754600B48A63 /* Yams */; };
+		68F5D86326C7A2A200C59710 /* CLILoggingIdentity+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68F5D86226C7A2A200C59710 /* CLILoggingIdentity+Extension.swift */; };
 		890B47A0966FB6D71C4067DB /* libPods-CLILoggerServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2451DC1179D65F23D507259A /* libPods-CLILoggerServer.a */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 		68B368BF2600542200F6C732 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		68B3699E2603367100F6C732 /* CLILoggingEntity+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLILoggingEntity+Extension.swift"; sourceTree = "<group>"; };
 		68B369A22603445600F6C732 /* DDLog+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDLog+Extension.swift"; sourceTree = "<group>"; };
+		68F5D86226C7A2A200C59710 /* CLILoggingIdentity+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLILoggingIdentity+Extension.swift"; sourceTree = "<group>"; };
 		A4428C2A61DD9393A626826C /* Pods-CLILoggerServer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CLILoggerServer.release.xcconfig"; path = "Target Support Files/Pods-CLILoggerServer/Pods-CLILoggerServer.release.xcconfig"; sourceTree = "<group>"; };
 		BFB3A83EDEB9CAAAECC7ED80 /* Pods-CLILoggerServer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CLILoggerServer.debug.xcconfig"; path = "Target Support Files/Pods-CLILoggerServer/Pods-CLILoggerServer.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -87,6 +89,7 @@
 			children = (
 				685A91E525F34576002C6102 /* main.swift */,
 				685A920C25F3EDCA002C6102 /* CLILoggingService.swift */,
+				68F5D86226C7A2A200C59710 /* CLILoggingIdentity+Extension.swift */,
 				68B3699E2603367100F6C732 /* CLILoggingEntity+Extension.swift */,
 				68B369A22603445600F6C732 /* DDLog+Extension.swift */,
 				68B368BF2600542200F6C732 /* Configuration.swift */,
@@ -193,6 +196,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				68F5D86326C7A2A200C59710 /* CLILoggingIdentity+Extension.swift in Sources */,
 				685A91E625F34576002C6102 /* main.swift in Sources */,
 				685A920D25F3EDCA002C6102 /* CLILoggingService.swift in Sources */,
 				68B3699F2603367100F6C732 /* CLILoggingEntity+Extension.swift in Sources */,

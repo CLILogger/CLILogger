@@ -105,27 +105,28 @@ struct App: ParsableCommand {
             }
 
             DDLogInfo("Welcome \(identity.hostName)!")
+
+            if let error = identity.save(by: config) {
+                DDLogError("\(error)")
+            }
+
             return true
         }
 
         service.foundIncomingMessage = { entity in
+            if let error = entity.save(by: config) {
+                DDLogError("\(error)")
+            }
+
             guard (entity.flag.rawValue & config.logLevel.rawValue) != 0 else {
                 return
             }
 
-            guard let filename = entity.filename else {
-                // Output log entity if filename is nil.
-                entity.output(by: config)
+            if let filename = entity.filename, config.matchModule(name: filename) == .blocklist {
                 return
             }
 
-            let mode = config.matchModule(name: filename)
-
-            if mode == .whitelist || mode == .default {
-                entity.output(by: config)
-            } else {
-                // Nothing happens if it's in block list.
-            }
+            entity.output(by: config)
         }
 
         service.resolveDeviceName = {[weak service] entity in
