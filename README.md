@@ -177,9 +177,11 @@ Otherwise you will [get this error](https://developer.apple.com/forums/thread/65
 
 #### Server
 
-- [ ] Support to show client alias.
+- [x] Support to show client alias.
 - [ ] Support to save and pipe the logging message to local file and other process.
-- [ ] Custom the log color by log level in the config file.
+- [x] Custom the log color by log level in the config file.
+- [ ] Send the `reject` message to client before disconnecting.
+- [ ] Support to highlight the specified keywords.
 
 
 
