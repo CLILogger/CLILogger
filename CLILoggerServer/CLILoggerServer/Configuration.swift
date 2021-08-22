@@ -109,6 +109,60 @@ public struct Configuration {
                 style = Style(rawValue: UInt8(value))
             }
         }
+
+        func apply(to text: String) -> String {
+            var result = text
+
+            if let fgColor = foregroundColor, fgColor != .default {
+                result = result.applyingColor(fgColor)
+            }
+
+            if let bgColor = backgroundColor, bgColor != .default {
+                result = result.applyingBackgroundColor(bgColor)
+            }
+
+            if let style = style, style != .default {
+                result = result.applyingStyle(style)
+            }
+
+            return result
+        }
+
+        func apply(to text: String) -> Rainbow.Segment {
+            var result = Rainbow.Segment(text: text)
+
+            result.color = ColorType.named(foregroundColor ?? .default)
+            result.backgroundColor = BackgroundColorType.named(backgroundColor ?? .default)
+            result.styles = [style ?? .default]
+
+            return result
+        }
+    }
+
+    struct Highlight {
+        var style: ColorStyle?
+        var texts: [String]?
+        var regexes: [String]?
+
+        enum YAMLKey: String {
+            case text, regex
+
+            var name: String {
+                return self.rawValue
+            }
+        }
+
+        init(_ dict: [String: Any?]) {
+            if let value = dict[YAMLKey.text.name] as? [String] {
+                texts = value
+            }
+
+            if let value = dict[YAMLKey.regex.name] as? [String] {
+                regexes = value
+            }
+
+            style = ColorStyle(dict)
+        }
     }
 
     struct Authorization {
@@ -187,6 +241,7 @@ public struct Configuration {
     public fileprivate(set) var formatter: Formatter?
 
     fileprivate(set) var style: [String: [TitledLogFlag: ColorStyle]]?
+    fileprivate(set) var highlights: [Highlight]?
     fileprivate(set) var authorization: Authorization?
     fileprivate(set) var deviceAliases: [DeviceAlias]?
     fileprivate(set) var deviceShowOption: DeviceShowOption = .automatic
@@ -201,6 +256,7 @@ public struct Configuration {
         case logLevel = "log-level"
         case formatter = "formatter"
         case style = "style"
+        case highlights = "highlights"
         case whitelistModules = "whitelist-modules"
         case blocklistModules = "blocklist-modules"
         case authorization = "authorization"
@@ -328,6 +384,18 @@ extension Configuration {
             #    \(ColorStyle.YAMLKey.foreground.name): \(Color.default.value)
             #    \(ColorStyle.YAMLKey.style.name): \(Style.italic.value)
 
+        # Highlight these texts and regex express by prefer styles.
+        # Note that texts will be matched first one by one, regex follows the same.
+        # If there are some intersection units when matching, the latter one will overwrite the former ones.
+        \(YAMLKey.highlights.name):
+            - \(ColorStyle.YAMLKey.foreground.name): \(Color.yellow.value)
+              \(ColorStyle.YAMLKey.background.name): \(BackgroundColor.black.value)
+              \(ColorStyle.YAMLKey.style.name): \(Style.blink.value)
+              \(Highlight.YAMLKey.text.name):
+                -
+              \(Highlight.YAMLKey.regex.name):
+                -
+
         # Module whitelist:
         \(YAMLKey.whitelistModules.name):
             -
@@ -430,40 +498,52 @@ extension Configuration {
 
 extension Configuration {
 
-    /// Apply specified style and flag for the message string.
+    /// Get color style for specified style and flag.
     /// - Parameters:
     ///   - formatter: target style formatter.
-    ///   - message: source message.
     ///   - flag: log flag.
-    /// - Returns: formatted result message.
-    func applyStyle(_ formatter: String, for message: String, with flag: DDLogFlag) -> String {
+    /// - Returns: target color style.
+    func colorStyleFrom(_ formatter: String, with flag: DDLogFlag) -> ColorStyle? {
         guard let style = style else {
-            return message
+            return nil
         }
 
         guard let formatStyle = (style[formatter] ?? style[ColorStyle.defaultFormatKey]) else {
-            return message
+            return nil
         }
 
-        guard let color = (formatStyle[flag.title] ?? formatStyle[.none]) else {
-            return message
+        return formatStyle[flag.title] ?? formatStyle[.none]
+    }
+
+    func highlightColorStyleFor(message: String) -> [Range<String.Index>: ColorStyle] {
+        var results: [Range<String.Index>: ColorStyle] = [:]
+
+        for highlight in highlights ?? [] {
+            guard let style = highlight.style else {
+                continue
+            }
+
+            for text in highlight.texts ?? [] {
+                if let range = message.range(of: text) {
+                    results[range] = style
+                }
+            }
+
+            for regex in highlight.regexes ?? [] {
+                let regex = try! NSRegularExpression(pattern: regex)
+                let matches = regex.matches(in: message, options: [.reportCompletion, .withTransparentBounds], range: NSRange(location: 0, length: message.count))
+
+                for match in matches {
+                    let start = message.index(message.startIndex, offsetBy: match.range.location)
+                    let end = message.index(message.startIndex, offsetBy: NSMaxRange(match.range))
+                    let range = start..<end
+
+                    results[range] = style
+                }
+            }
         }
 
-        var result = message
-
-        if let fgColor = color.foregroundColor, fgColor != .default {
-            result = result.applyingColor(fgColor)
-        }
-
-        if let bgColor = color.backgroundColor, bgColor != .default {
-            result = result.applyingBackgroundColor(bgColor)
-        }
-
-        if let style = color.style, style != .default {
-            result = result.applyingStyle(style)
-        }
-
-        return result
+        return results
     }
 }
 
@@ -517,6 +597,10 @@ extension Configuration {
                     styleDict[.none] = ColorStyle(formatDict)
                     style![format] = styleDict
                 }
+            }
+
+            if let highlightDict = dict[YAMLKey.highlights.name] as? [[String: Any?]] {
+                highlights = highlightDict.map { Highlight($0) }
             }
 
             if let auth = dict[YAMLKey.authorization.name] as? [String: Any?] {
@@ -601,6 +685,7 @@ extension Configuration {
         servicePort = config.servicePort
         formatter = config.formatter
         style = config.style
+        highlights = config.highlights
         authorization = config.authorization
         deviceAliases = config.deviceAliases
         deviceShowOption = config.deviceShowOption

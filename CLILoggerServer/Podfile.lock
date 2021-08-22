@@ -8,13 +8,13 @@ PODS:
   - CocoaLumberjack/Core (3.7.0)
   - CocoaLumberjack/Swift (3.7.0):
     - CocoaLumberjack/Core
-  - RainbowSwift (3.2.0)
+  - RainbowSwift (4.0.0)
 
 DEPENDENCIES:
   - CLILogger (from `../`)
   - CocoaAsyncSocket
   - CocoaLumberjack/Swift
-  - RainbowSwift (~> 3.2.0)
+  - RainbowSwift (~> 4.0.0)
 
 SPEC REPOS:
   trunk:
@@ -30,8 +30,8 @@ SPEC CHECKSUMS:
   CLILogger: a579e5cfbcb0549518afcf027a079430e57a989d
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CocoaLumberjack: e8955b9d337ac307103b0a34fd141c32f27e53c5
-  RainbowSwift: 97eea9ffebcfeb9f9c3a4c0cabf9ff2684c2b588
+  RainbowSwift: 08a7d1719e935c45c29be7990d9ce1747733f5a7
 
-PODFILE CHECKSUM: 813c9faecb47db92d5b32a02de26361b23e68645
+PODFILE CHECKSUM: 60a2f3d9d175f704d26dacd6804c2dbf0b5e3705
 
 COCOAPODS: 1.10.2

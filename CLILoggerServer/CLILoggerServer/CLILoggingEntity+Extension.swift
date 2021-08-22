@@ -10,6 +10,13 @@ import RainbowSwift
 import CLILogger
 
 /// Reverse the subranges in source range.
+///
+/// For example:
+///     source range:   0   2   5   7   8   9
+///     sub-range1:         [...]
+///     sub-range2:                 [...]
+///     result ranges:  [...]   [...]   [...]
+///
 private func reverse_range(_ range: Range<Int>, subranges: [Range<Int>]) -> [Range<Int>] {
     var result_ranges: [Range<Int>] = []
     var last_reverse_index: Int?
@@ -41,22 +48,82 @@ private func reverse_range(_ range: Range<Int>, subranges: [Range<Int>]) -> [Ran
     return result_ranges
 }
 
-/// Sort the ranges by its lower bound. (Bubble sort)
-private func sort_range(_ ranges: [Range<Int>]) -> [Range<Int>] {
+/// Bubble sort on range.
+private func sort_range<INDEX>(_ ranges: [Range<INDEX>], by: (Range<INDEX>, Range<INDEX>) -> Bool) -> [Range<INDEX>] {
     var array = ranges
 
     for _ in 0..<array.count {
-      for j in 1..<array.count {
-        if array[j].lowerBound < array[j-1].lowerBound {
-          let tmp = array[j-1]
-          array[j-1] = array[j]
-          array[j] = tmp
+        for j in 1..<array.count {
+            let cur = array[j], pre = array[j - 1]
+
+            if !by(pre, cur) {
+                let tmp = pre
+                array[j - 1] = cur
+                array[j] = tmp
+            }
         }
-      }
     }
 
     return array
 }
+
+/// Sort the ranges by its lower bound with ascending order.
+private func sort_range<INDEX>(_ ranges: [Range<INDEX>]) -> [Range<INDEX>] {
+    sort_range(ranges) { r1, r2 in
+        r1.lowerBound < r2.lowerBound
+    }
+}
+
+func rearrange_ranges<INDEX>(_ subranges: [Range<INDEX>: Any]) -> [Range<INDEX>: Any] {
+    var result_ranges: [Range<INDEX>: Any] = [:]
+    var separator_indexes: Set<INDEX> = .init()
+
+    for subrange in subranges.keys {
+        separator_indexes.update(with: subrange.lowerBound)
+        separator_indexes.update(with: subrange.upperBound)
+    }
+
+    func value_for(index: INDEX) -> Any {
+        var matches: [Range<INDEX>] = []
+
+        let sorted = sort_range(Array(subranges.keys)) { r1, r2 in
+            r1.lowerBound < r2.lowerBound || (r1.lowerBound == r2.lowerBound && r1.upperBound > r2.upperBound)
+        }
+        // print("sorted: \(sorted)")
+
+        for range in sorted {
+            if range.lowerBound <= index && range.upperBound > index {
+                matches.append(range)
+                // print("     matches: \(range)")
+            }
+        }
+
+        if let topRange = matches.last {
+            return subranges[topRange]!
+        }
+
+        assert(false, "Fatal wrong routes!")
+        return ""
+    }
+
+    var last_index: INDEX?
+
+    for idx in separator_indexes.sorted() {
+        print("\ntarget: \(idx)")
+
+        if last_index == nil {
+            last_index = idx
+        } else if last_index != idx {
+            let value = value_for(index: last_index!)
+            result_ranges[last_index!..<idx] = value
+            print("new range: \(last_index!..<idx) = \(value)")
+            last_index = idx
+        }
+    }
+
+    return result_ranges
+}
+
 
 extension CLILoggingEntity {
 
@@ -98,47 +165,69 @@ extension CLILoggingEntity {
     }
 
     private func replaceValue(_ value: String, with config: Configuration) -> String {
-        let formatterKey = Configuration.Formatter.FormatKey.allCases.first { "{{\($0.name)}}" == value}
+        guard let formatterKey = Configuration.Formatter.FormatKey.allCases.first(where: { "{{\($0.name)}}" == value }) else {
+            return value
+        }
+
         var replacedValue = value
 
-        for key in Configuration.Formatter.FormatKey.allCases {
-            if formatterKey != key {
-                continue
-            }
+        switch formatterKey {
+        case .time:
+            replacedValue = (config.formatter!.timeFormatter ?? Self.defaultTimeFormatter).string(from: date)
+            break
 
-            switch key {
-            case .time:
-                replacedValue = (config.formatter!.timeFormatter ?? Self.defaultTimeFormatter).string(from: date)
-                break
+        case .flag:
+            replacedValue = flag!.title.name.padding(toLength: 7, withPad: " ", startingAt: 0)
+            break
 
-            case .flag:
-                replacedValue = flag!.title.name.padding(toLength: 7, withPad: " ", startingAt: 0)
-                break
+        case .filename:
+            replacedValue = filename ?? ""
+            break
 
-            case .filename:
-                replacedValue = filename ?? ""
-                break
+        case .line:
+            replacedValue = (line != nil) ? "\(line!)" : ""
+            break
 
-            case .line:
-                replacedValue = (line != nil) ? "\(line!)" : ""
-                break
+        case .function:
+            replacedValue = function ?? ""
+            break
 
-            case .function:
-                replacedValue = function ?? ""
-                break
+        case .message:
+            replacedValue = message
+            break
 
-            case .message:
-                replacedValue = message
-                break
+        case .device:
+            // Append a empty space to the ending of device name to separate it from other format units.
+            replacedValue = "\(deviceName!) "
+            break
+        }
 
-            case .device:
-                // Append a empty space to the ending of device name to separate it from other format units.
-                replacedValue = "\(deviceName!) "
-                break
+        let colorStyle = config.colorStyleFrom(formatterKey.name, with: flag)
+        return applyStyle(colorStyle, for: replacedValue)
+    }
+
+    private func applyStyle(_ style: Configuration.ColorStyle?, for message: String) -> String {
+        var colorRanges: [Range<String.Index>: Configuration.ColorStyle] = [:]
+        var result: String = ""
+
+        if let style = style {
+            colorRanges[message.startIndex..<message.endIndex] = style
+        }
+
+        colorRanges.merge(config.highlightColorStyleFor(message: message)) { cs1, cs2 in cs1 }
+        colorRanges = rearrange_ranges(colorRanges) as! [Range<String.Index>: Configuration.ColorStyle]
+
+        // print("Source: [\(message)]")
+
+        for range in colorRanges.keys.sorted(by: { $0.lowerBound < $1.lowerBound }) {
+            if let colorStyle = colorRanges[range] {
+                result += colorStyle.apply(to: String(message[range]))
+                // print("     Match: [\(String(message[range]))], colorful: [\(colorStyle.apply(to: String(message[range])))], range: \(range.lowerBound.utf16Offset(in: message)):\(range.upperBound.utf16Offset(in: message))")
             }
         }
 
-        return config.applyStyle(formatterKey?.name ?? "", for: replacedValue, with: flag)
+        // print("Result: [\(result)]")
+        return result
     }
 
     private func customFormatMessage(_ config: Configuration) -> String {

@@ -181,7 +181,7 @@ Otherwise you will [get this error](https://developer.apple.com/forums/thread/65
 - [ ] Support to save and pipe the logging message to local file and other process.
 - [x] Custom the log color by log level in the config file.
 - [ ] Send the `reject` message to client before disconnecting.
-- [ ] Support to highlight the specified keywords.
+- [x] Support to highlight the specified keywords.
 
 
 
