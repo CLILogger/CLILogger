@@ -155,3 +155,81 @@ struct App: ParsableCommand {
 App.main()
 
 RunLoop.current.run()
+
+
+
+
+//let sourceRange: Range<Int> = 0..<100
+//let subRanges: [Range<Int>] = [
+//    1..<5,
+//    8..<20,
+//    10..<30,
+//]
+//
+//print(reverse_range(sourceRange, subranges: subRanges))
+
+
+
+import RainbowSwift
+
+let entry = Rainbow.Entry(
+    segments: [
+        .init(text: "Hello ", color: .named(.magenta)),
+        .init(text: "Rainbow ", color: .bit8(214), backgroundColor: .named(.black), styles: [.underline]),
+        .init(text: "Hello ", color: .named(.magenta)/*, backgroundColor: .named(.default)*/),  // Comment 1
+        .init(text: "again", color: .named(.magenta), backgroundColor: .named(.red), styles: [.default]),  // Comment 2
+    ]
+)
+print("")
+print(Rainbow.generateString(for: entry))
+print("")
+
+
+
+
+//
+//func rearrange_ranges(_ subranges: [Range<Int>: Any]) -> [Range<Int>: Any] {
+//    var result_ranges: [Range<Int>: Any] = [:]
+//    var separator_indexes: Set<Int> = .init()
+//
+//    for subrange in subranges.keys {
+//        separator_indexes.update(with: subrange.lowerBound)
+//        separator_indexes.update(with: subrange.upperBound)
+//    }
+//
+//    var last_index: Int = 0
+//
+//    for idx in separator_indexes.sorted() {
+//        print("\(idx)")
+//
+//        if last_index != idx {
+//            result_ranges[last_index..<idx] = ""
+//            last_index = idx
+//        }
+//    }
+//
+//    return result_ranges
+//}
+
+// 0  1    5    7    8    10    15     20    30       100
+// <                                              >
+//    <    >
+//                   <                  >
+//                        <      >
+//                        <                   >
+//              <         >
+
+//let sourceRanges: [Range<Int>: String] = [
+//    0..<100 : "[0-100]",
+//    1..<5 : "[1-5]",
+//    8..<20 : "[8-20]",
+//    10..<30 : "[10-30]",
+//    10..<15 : "[10-15]",
+//    7..<10 : "[7-10]",
+//]
+//
+//print(sourceRanges)
+//print(rearrange_ranges(sourceRanges))
+
+
+

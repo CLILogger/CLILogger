@@ -31,11 +31,11 @@ CLILoggingServiceInfo.logHandler = { level, message in
     print("[\(level)]: \(message)")
 }
 
-DDLogVerbose("Hello!")
-DDLogDebug("This is \(Host.current().name ?? "a guest")")
-DDLogInfo("The default internal log level is INFO")
-DDLogWarn("Warn me if something wrong you encounter")
-DDLogError("Remember to attach the error context verbosely")
+DDLogError("Hello! :10 :20 : 20 hello :30 :44 ending? :10000 lasdf <EOM>")
+//DDLogDebug("This is \(Host.current().name ?? "a guest")")
+//DDLogInfo("The default internal log level is INFO")
+//DDLogWarn("Warn me if something wrong you encounter")
+//DDLogError("Remember to attach the error context verbosely")
 #endif
 RunLoop.main.run()
 
