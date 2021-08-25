@@ -80,9 +80,9 @@ public struct Configuration {
 
     struct ColorStyle {
         var flag: DDLogFlag?
-        var foregroundColor: Color?
-        var backgroundColor: BackgroundColor?
-        var style: Style?
+        var foregroundColor: ColorType?
+        var backgroundColor: BackgroundColorType?
+        var styles: [Style]?
 
         static var defaultFormatKey = "Default"
 
@@ -96,32 +96,47 @@ public struct Configuration {
             }
         }
 
+        private static func hexRGB(_ source: String?) -> RGB? {
+            guard let source = source, let rgb = UInt(source, radix: 16) else {
+                return nil
+            }
+
+            let r = (rgb & 0xFF0000) >> 16
+            let g = (rgb & 0x00FF00) >> 8
+            let b = (rgb & 0x0000FF) >> 0
+            return RGB(UInt8(r), UInt8(g), UInt8(b))
+        }
+
         init(_ dict: [String: Any?]) {
-            if let value = dict[YAMLKey.foreground.name] as? Int {
-                foregroundColor = Color(rawValue: UInt8(value))
+            if let rgb = Self.hexRGB(dict[YAMLKey.foreground.name] as? String) {
+                foregroundColor = ColorType.bit24(rgb)
+            } else {
+                foregroundColor = ColorType.named(.default)
             }
 
-            if let value = dict[YAMLKey.background.name] as? Int {
-                backgroundColor = BackgroundColor(rawValue: UInt8(value))
+            if let rgb = Self.hexRGB(dict[YAMLKey.background.name] as? String) {
+                backgroundColor = BackgroundColorType.bit24(rgb)
+            } else {
+                backgroundColor = BackgroundColorType.named(.default)
             }
 
-            if let value = dict[YAMLKey.style.name] as? Int {
-                style = Style(rawValue: UInt8(value))
+            if let value = dict[YAMLKey.style.name] as? String {
+                styles = value.components(separatedBy: ", ").map({ Style(rawValue: UInt8($0) ?? Style.default.rawValue) ?? .default })
             }
         }
 
         func apply(to text: String) -> String {
             var result = text
 
-            if let fgColor = foregroundColor, fgColor != .default {
+            if let fgColor = foregroundColor, fgColor != .named(.default) {
                 result = result.applyingColor(fgColor)
             }
 
-            if let bgColor = backgroundColor, bgColor != .default {
+            if let bgColor = backgroundColor, bgColor != .named(.default) {
                 result = result.applyingBackgroundColor(bgColor)
             }
 
-            if let style = style, style != .default {
+            for style in styles ?? [] {
                 result = result.applyingStyle(style)
             }
 
@@ -131,9 +146,9 @@ public struct Configuration {
         func apply(to text: String) -> Rainbow.Segment {
             var result = Rainbow.Segment(text: text)
 
-            result.color = ColorType.named(foregroundColor ?? .default)
-            result.backgroundColor = BackgroundColorType.named(backgroundColor ?? .default)
-            result.styles = [style ?? .default]
+            result.color = foregroundColor ?? .named(.default)
+            result.backgroundColor = backgroundColor ?? .named(.default)
+            result.styles = styles ?? [Style.default]
 
             return result
         }
