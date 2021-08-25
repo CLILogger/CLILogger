@@ -80,9 +80,9 @@ public struct Configuration {
 
     struct ColorStyle {
         var flag: DDLogFlag?
-        var foregroundColor: Color?
-        var backgroundColor: BackgroundColor?
-        var style: Style?
+        var foregroundColor: ColorType?
+        var backgroundColor: BackgroundColorType?
+        var styles: [Style]?
 
         static var defaultFormatKey = "Default"
 
@@ -96,32 +96,47 @@ public struct Configuration {
             }
         }
 
+        private static func hexRGB(_ rgb: Int?) -> RGB? {
+            guard let rgb = rgb else {
+                return nil
+            }
+
+            let r = (rgb & 0xFF0000) >> 16
+            let g = (rgb & 0x00FF00) >> 8
+            let b = (rgb & 0x0000FF) >> 0
+            return RGB(UInt8(r), UInt8(g), UInt8(b))
+        }
+
         init(_ dict: [String: Any?]) {
-            if let value = dict[YAMLKey.foreground.name] as? Int {
-                foregroundColor = Color(rawValue: UInt8(value))
+            if let rgb = Self.hexRGB(dict[YAMLKey.foreground.name] as? Int) {
+                foregroundColor = ColorType.bit24(rgb)
+            } else {
+                foregroundColor = ColorType.named(.default)
             }
 
-            if let value = dict[YAMLKey.background.name] as? Int {
-                backgroundColor = BackgroundColor(rawValue: UInt8(value))
+            if let rgb = Self.hexRGB(dict[YAMLKey.background.name] as? Int) {
+                backgroundColor = BackgroundColorType.bit24(rgb)
+            } else {
+                backgroundColor = BackgroundColorType.named(.default)
             }
 
-            if let value = dict[YAMLKey.style.name] as? Int {
-                style = Style(rawValue: UInt8(value))
+            if let value = dict[YAMLKey.style.name] as? String {
+                styles = value.components(separatedBy: ", ").map({ Style(rawValue: UInt8($0) ?? Style.default.rawValue) ?? .default })
             }
         }
 
         func apply(to text: String) -> String {
             var result = text
 
-            if let fgColor = foregroundColor, fgColor != .default {
+            if let fgColor = foregroundColor, fgColor != .named(.default) {
                 result = result.applyingColor(fgColor)
             }
 
-            if let bgColor = backgroundColor, bgColor != .default {
+            if let bgColor = backgroundColor, bgColor != .named(.default) {
                 result = result.applyingBackgroundColor(bgColor)
             }
 
-            if let style = style, style != .default {
+            for style in styles ?? [] {
                 result = result.applyingStyle(style)
             }
 
@@ -131,9 +146,9 @@ public struct Configuration {
         func apply(to text: String) -> Rainbow.Segment {
             var result = Rainbow.Segment(text: text)
 
-            result.color = ColorType.named(foregroundColor ?? .default)
-            result.backgroundColor = BackgroundColorType.named(backgroundColor ?? .default)
-            result.styles = [style ?? .default]
+            result.color = foregroundColor ?? .named(.default)
+            result.backgroundColor = backgroundColor ?? .named(.default)
+            result.styles = styles ?? [Style.default]
 
             return result
         }
@@ -354,42 +369,43 @@ extension Configuration {
             # References: https://nsdateformatter.com/
             \(Formatter.YAMLKey.time.name): "HH:mm:ss.SSS"
 
-        # Style configurations.
+        # Style configurations for every formatter units.
+        # It uses 24-bit true color for foreground and background color, fill them with hex number format 0xFFFFFF.
+        # References: https://en.wikipedia.org/wiki/ANSI_escape_code
         \(YAMLKey.style.name):
             # This default style section will be used for all the format units if no other specific section configured.
             \(ColorStyle.defaultFormatKey):
-                # See the value options from https://github.com/onevcat/Rainbow/blob/master/Sources/Color.swift.
-                \(ColorStyle.YAMLKey.foreground.name): \(Color.lightBlack.rawValue)
-                # See the value options from https://github.com/onevcat/Rainbow/blob/master/Sources/BackgroundColor.swift.
-                \(ColorStyle.YAMLKey.background.name): \(BackgroundColor.default.rawValue)
+                # Feel free to edit this color for your terminal theme.
+                \(ColorStyle.YAMLKey.foreground.name): 0x303030
+                # The default background color is clear.
+                # \(ColorStyle.YAMLKey.background.name):
+                # Bold, italic, underline? Join their raw values with comma `,` or empty space ` `.
                 # See the value options from https://github.com/onevcat/Rainbow/blob/master/Sources/Style.swift.
                 \(ColorStyle.YAMLKey.style.name): \(Style.default.rawValue)
 
             # Apply the classical colorful style for message by log flag:
             \(Formatter.FormatKey.message.name):
                 \(TitledLogFlag.verbose.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.black.rawValue)
+                    \(ColorStyle.YAMLKey.foreground.name): 0x202020     # 555753 black
                 \(TitledLogFlag.debug.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.green.rawValue)
+                    \(ColorStyle.YAMLKey.foreground.name): 0x75b36a     # green
                 \(TitledLogFlag.info.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.lightWhite.rawValue)
+                    \(ColorStyle.YAMLKey.foreground.name): 0xd3d7cf     # light white
                 \(TitledLogFlag.warning.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.yellow.rawValue)
+                    \(ColorStyle.YAMLKey.foreground.name): 0xc39821     # yellow
                 \(TitledLogFlag.error.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.red.rawValue)
+                    \(ColorStyle.YAMLKey.foreground.name): 0xf56156     # red
 
             # One more an example:
             # Set separated font style for the time unit.
             # \(Formatter.FormatKey.time.name):
-            #    \(ColorStyle.YAMLKey.foreground.name): \(Color.default.rawValue)
             #    \(ColorStyle.YAMLKey.style.name): \(Style.italic.rawValue)
 
         # Highlight these texts and regex express by prefer styles.
-        # Note that texts will be matched first one by one, regex follows the same.
         # If there are some intersection units when matching, the latter one will overwrite the former ones.
         \(YAMLKey.highlights.name):
-            - \(ColorStyle.YAMLKey.foreground.name): \(Color.yellow.rawValue)
-              \(ColorStyle.YAMLKey.background.name): \(BackgroundColor.black.rawValue)
+            - \(ColorStyle.YAMLKey.foreground.name): 0xfce94f            # bright yellow
+              \(ColorStyle.YAMLKey.background.name): 0x000000            # black
               \(ColorStyle.YAMLKey.style.name): \(Style.blink.rawValue)
               \(Highlight.YAMLKey.text.name):
                 -
