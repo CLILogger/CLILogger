@@ -165,10 +165,7 @@ extension CLILoggingEntity {
     }
 
     private func replaceValue(_ value: String, with config: Configuration) -> String {
-        guard let formatterKey = Configuration.Formatter.FormatKey.allCases.first(where: { "{{\($0.name)}}" == value }) else {
-            return value
-        }
-
+        let formatterKey = Configuration.Formatter.FormatKey.allCases.first(where: { "{{\($0.name)}}" == value })
         var replacedValue = value
 
         switch formatterKey {
@@ -200,9 +197,13 @@ extension CLILoggingEntity {
             // Append a empty space to the ending of device name to separate it from other format units.
             replacedValue = "\(deviceName!) "
             break
+
+        case .none:
+            replacedValue = value
+            break
         }
 
-        let colorStyle = config.colorStyleFrom(formatterKey.name, with: flag)
+        let colorStyle = config.colorStyleFor(formatterKey?.name, with: flag)
         return applyStyle(colorStyle, for: replacedValue)
     }
 

@@ -503,13 +503,14 @@ extension Configuration {
     ///   - formatter: target style formatter.
     ///   - flag: log flag.
     /// - Returns: target color style.
-    func colorStyleFrom(_ formatter: String, with flag: DDLogFlag) -> ColorStyle? {
+    func colorStyleFor(_ formatter: String?, with flag: DDLogFlag) -> ColorStyle? {
         guard let style = style else {
             return nil
         }
 
-        guard let formatStyle = (style[formatter] ?? style[ColorStyle.defaultFormatKey]) else {
-            return nil
+        guard let fmt = formatter, let formatStyle = style[fmt] else {
+            let formatStyle = style[ColorStyle.defaultFormatKey]
+            return formatStyle?[flag.title] ?? formatStyle?[.none]
         }
 
         return formatStyle[flag.title] ?? formatStyle[.none]
