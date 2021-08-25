@@ -109,14 +109,14 @@ func rearrange_ranges<INDEX>(_ subranges: [Range<INDEX>: Any]) -> [Range<INDEX>:
     var last_index: INDEX?
 
     for idx in separator_indexes.sorted() {
-        print("\ntarget: \(idx)")
+        // print("\ntarget: \(idx)")
 
         if last_index == nil {
             last_index = idx
         } else if last_index != idx {
             let value = value_for(index: last_index!)
             result_ranges[last_index!..<idx] = value
-            print("new range: \(last_index!..<idx) = \(value)")
+            // print("new range: \(last_index!..<idx) = \(value)")
             last_index = idx
         }
     }
