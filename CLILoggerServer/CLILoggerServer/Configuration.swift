@@ -359,38 +359,38 @@ extension Configuration {
             # This default style section will be used for all the format units if no other specific section configured.
             \(ColorStyle.defaultFormatKey):
                 # See the value options from https://github.com/onevcat/Rainbow/blob/master/Sources/Color.swift.
-                \(ColorStyle.YAMLKey.foreground.name): \(Color.lightBlack.value)
+                \(ColorStyle.YAMLKey.foreground.name): \(Color.lightBlack.rawValue)
                 # See the value options from https://github.com/onevcat/Rainbow/blob/master/Sources/BackgroundColor.swift.
-                \(ColorStyle.YAMLKey.background.name): \(BackgroundColor.default.value)
+                \(ColorStyle.YAMLKey.background.name): \(BackgroundColor.default.rawValue)
                 # See the value options from https://github.com/onevcat/Rainbow/blob/master/Sources/Style.swift.
-                \(ColorStyle.YAMLKey.style.name): \(Style.default.value)
+                \(ColorStyle.YAMLKey.style.name): \(Style.default.rawValue)
 
             # Apply the classical colorful style for message by log flag:
             \(Formatter.FormatKey.message.name):
                 \(TitledLogFlag.verbose.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.black.value)
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.black.rawValue)
                 \(TitledLogFlag.debug.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.green.value)
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.green.rawValue)
                 \(TitledLogFlag.info.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.lightWhite.value)
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.lightWhite.rawValue)
                 \(TitledLogFlag.warning.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.yellow.value)
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.yellow.rawValue)
                 \(TitledLogFlag.error.name):
-                    \(ColorStyle.YAMLKey.foreground.name): \(Color.red.value)
+                    \(ColorStyle.YAMLKey.foreground.name): \(Color.red.rawValue)
 
             # One more an example:
             # Set separated font style for the time unit.
             # \(Formatter.FormatKey.time.name):
-            #    \(ColorStyle.YAMLKey.foreground.name): \(Color.default.value)
-            #    \(ColorStyle.YAMLKey.style.name): \(Style.italic.value)
+            #    \(ColorStyle.YAMLKey.foreground.name): \(Color.default.rawValue)
+            #    \(ColorStyle.YAMLKey.style.name): \(Style.italic.rawValue)
 
         # Highlight these texts and regex express by prefer styles.
         # Note that texts will be matched first one by one, regex follows the same.
         # If there are some intersection units when matching, the latter one will overwrite the former ones.
         \(YAMLKey.highlights.name):
-            - \(ColorStyle.YAMLKey.foreground.name): \(Color.yellow.value)
-              \(ColorStyle.YAMLKey.background.name): \(BackgroundColor.black.value)
-              \(ColorStyle.YAMLKey.style.name): \(Style.blink.value)
+            - \(ColorStyle.YAMLKey.foreground.name): \(Color.yellow.rawValue)
+              \(ColorStyle.YAMLKey.background.name): \(BackgroundColor.black.rawValue)
+              \(ColorStyle.YAMLKey.style.name): \(Style.blink.rawValue)
               \(Highlight.YAMLKey.text.name):
                 -
               \(Highlight.YAMLKey.regex.name):
