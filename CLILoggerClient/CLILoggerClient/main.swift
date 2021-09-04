@@ -24,7 +24,7 @@ client.searchService()
 
 client.log("This is \(Host.current().name ?? "a guest")")
 client.log("See", "you", "next", "time!")
-#else
+#elseif false
 DDLog.add(CLILogger.shared)
 
 CLILoggingServiceInfo.logHandler = { level, message in
@@ -36,6 +36,24 @@ DDLogDebug("This is \(Host.current().name ?? "a guest")")
 DDLogInfo("The default internal log level is INFO")
 DDLogWarn("Warn me if something wrong you encounter")
 DDLogError("Remember to attach the error context verbosely")
+#else
+DDLog.add(CLILogger.shared)
+
+DispatchQueue.global().async {
+    var counter: Int = 0
+
+    while true {
+        DDLogVerbose("Hello! \(counter)")
+        DDLogDebug("This is \(Host.current().name ?? "a guest")")
+        DDLogInfo("The default internal log level is INFO")
+        DDLogWarn("Warn me if something wrong you encounter")
+        DDLogError("Remember to attach the error context verbosely")
+
+        counter += 1
+        sleep(3)
+    }
+}
+
 #endif
 RunLoop.main.run()
 
