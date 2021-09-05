@@ -138,11 +138,7 @@ public class CLILoggingClient: NSObject {
             return
         }
 
-        var data = Data.MessageType.hello.data
-
-        data.append(identityMessage.bufferData)
-        data.append(Data.terminator)
-        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: CLILoggingIdentity.initialTag)
+        socket.write(identityMessage.bufferData.wrap(as: .hello), withTimeout: CLILoggingServiceInfo.timeout, tag: CLILoggingIdentity.initialTag)
     }
 
     /// Pick first message from the pending message queue and send it.
@@ -165,11 +161,7 @@ public class CLILoggingClient: NSObject {
 
         queueLocker.unlock()
 
-        var data = Data.MessageType.entity.data
-
-        data.append(entity.bufferData)
-        data.append(Data.terminator)
-        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag!)
+        socket.write(entity.bufferData.wrap(as: .entity), withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag!)
     }
 
     /// Reset the net service, index, addresses and socket.
@@ -339,11 +331,16 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
 
     public func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
         log(.verbose, activity: "\(#function), tag: \(tag)")
-        let (type, messageData) = data.extracted()
+        let (type, messageData) = data.extract()
+
+        guard let messageData = messageData else {
+            DDLogWarn("Invalid message data extracted, tag: \(tag)")
+            return
+        }
 
         switch type {
         case .reject:
-            let response = CLILoggingResponse(data: messageData!)
+            let response = CLILoggingResponse(data: messageData)
 
             if let result = response.accepted, result == true {
                 log(.info, activity: "The socket identity get accepted!")
@@ -409,7 +406,15 @@ public extension Data {
         }
     }
 
-    func extracted() -> (MessageType?, Data?) {
+    func wrap(as type: MessageType) -> Data {
+        var data = type.data
+
+        data.append(self)
+        data.append(Data.terminator)
+        return data
+    }
+
+    func extract() -> (MessageType?, Data?) {
         let typeEndIndex = self.startIndex + Int(Data.MessageType.length)
         let typeData = self.subdata(in: 0..<typeEndIndex)
         let type = Data.MessageType.match(typeData)

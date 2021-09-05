@@ -138,11 +138,16 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
 
     func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
         DDLogVerbose("\(#function)")
-        let (type, messageData) = data.extracted()
+        let (type, messageData) = data.extract()
+
+        guard let messageData = messageData else {
+            DDLogWarn("Invalid message data extracted, tag: \(tag)")
+            return
+        }
 
         switch type {
         case .hello:
-            var identity = CLILoggingIdentity(data: messageData!)
+            var identity = CLILoggingIdentity(data: messageData)
 
             if let device = config.deviceAliases?.first(where: { $0.identifier == identity.deviceID }),
                let alias = device.alias {
@@ -164,11 +169,7 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
                 sock.identity = identity
             }
 
-            var responseData = Data.MessageType.reject.data
-
-            responseData.append(response.bufferData)
-            responseData.append(Data.terminator)
-            sock.write(responseData, withTimeout: -1, tag: CLILoggingResponse.initialTag)
+            sock.write(response.bufferData.wrap(as: .reject), withTimeout: -1, tag: CLILoggingResponse.initialTag)
             break
 
         case .entity:
