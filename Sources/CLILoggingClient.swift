@@ -125,7 +125,7 @@ public class CLILoggingClient: NSObject {
             }
         }
 
-        if !done {
+        if !done && !connected {
             print("Unable to connect to any resolved addresses!")
             resetCurrentService()
             searchService()
@@ -142,7 +142,7 @@ public class CLILoggingClient: NSObject {
 
         data.append(identityMessage.bufferData)
         data.append(Data.terminator)
-        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: CLILoggingIdentity.tagNumber)
+        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: CLILoggingIdentity.initialTag)
     }
 
     /// Pick first message from the pending message queue and send it.
@@ -169,7 +169,7 @@ public class CLILoggingClient: NSObject {
 
         data.append(entity.bufferData)
         data.append(Data.terminator)
-        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag)
+        socket.write(data, withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag!)
     }
 
     /// Reset the net service, index, addresses and socket.
@@ -295,7 +295,7 @@ extension CLILoggingClient: NetServiceBrowserDelegate {
 extension CLILoggingClient: NetServiceDelegate {
 
     public func netServiceDidResolveAddress(_ sender: NetService) {
-        log(.info, activity: "\(#function)")
+        log(.info, activity: "\(#function), sender: \(sender)")
 
         if serverAddresses.isEmpty {
             serverAddresses = sender.addresses!.filter { !CLILoggingRecord.allRejectedAddresses.contains($0) }
@@ -337,14 +337,36 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
         connected = false
     }
 
+    public func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
+        log(.verbose, activity: "\(#function), tag: \(tag)")
+        let (type, messageData) = data.extracted()
+
+        switch type {
+        case .reject:
+            let response = CLILoggingResponse(data: messageData!)
+
+            if let result = response.accepted, result == true {
+                log(.info, activity: "The socket identity get accepted!")
+                identityApproved = true
+            } else {
+                log(.warning, activity: "The socket identity get rejected! Message: \(response.message ?? "none")")
+            }
+            break
+
+        default:
+            DDLogError("Found unexpected data message: \(data)")
+            break
+        }
+    }
+
     public func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
-        if tag == CLILoggingIdentity.tagNumber {
-            // Sent the 'hello' message.
-            identityApproved = true
+        if CLILoggingIdentity.tagRange.contains(tag) {
+            // Sent the 'hello' message already, let's wait for server response.
+            sock.readData(to: Data.terminator, withTimeout: -1, tag: CLILoggingResponse.initialTag)
             return
         }
 
-        guard tag >= CLILoggingEntity.tagOffset, let index = pendingMessages.firstIndex(where: {$0.tag == tag}) else {
+        guard CLILoggingEntity.tagRange.contains(tag), let index = pendingMessages.firstIndex(where: {$0.tag == tag}) else {
             return
         }
 
@@ -363,6 +385,7 @@ public extension Data {
 
     enum MessageType : String, CaseIterable {
         case hello = "HI"
+        case reject = "RJ"
         case entity = "EN"
 
         public static var length: UInt8 {
@@ -373,7 +396,7 @@ public extension Data {
             MessageType.allCases.first { $0.data == data }
         }
 
-        var data: Data {
+        public var data: Data {
             self.rawValue.data(using: .utf8)!
         }
     }
@@ -384,6 +407,17 @@ public extension Data {
             let bytes = [0x1F, 0x20, 0x20, 0x1F]
             return Data(bytes: bytes, count: bytes.count)
         }
+    }
+
+    func extracted() -> (MessageType?, Data?) {
+        let typeEndIndex = self.startIndex + Int(Data.MessageType.length)
+        let typeData = self.subdata(in: 0..<typeEndIndex)
+        let type = Data.MessageType.match(typeData)
+
+        let endIndex = self.endIndex - Data.terminator.endIndex + 1
+        let messageData = self.subdata(in: typeEndIndex..<self.index(before: endIndex))
+
+        return (type, messageData)
     }
 }
 

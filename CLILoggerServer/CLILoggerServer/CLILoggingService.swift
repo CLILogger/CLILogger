@@ -15,7 +15,7 @@ class CLILoggingService: NSObject {
     public var port: UInt16 = 0
 
     // Incoming identity handler
-    public var foundIncomingIdentity: ((CLILoggingIdentity) -> Bool)?
+    public var foundIncomingIdentity: ((CLILoggingIdentity) -> (Bool, String?))?
     // Incoming message handler
     public var foundIncomingMessage: ((CLILoggingEntity) -> Void)?
     public var resolveDeviceName: ((CLILoggingEntity) -> String)?
@@ -138,17 +138,11 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
 
     func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
         DDLogVerbose("\(#function)")
-
-        let typeEndIndex = data.startIndex + Int(Data.MessageType.length)
-        let typeData = data.subdata(in: 0..<typeEndIndex)
-        let type = Data.MessageType.match(typeData)
-
-        let endIndex = data.endIndex - Data.terminator.endIndex + 1
-        let messageData = data.subdata(in: typeEndIndex..<data.index(before: endIndex))
+        let (type, messageData) = data.extracted()
 
         switch type {
         case .hello:
-            var identity = CLILoggingIdentity(data: messageData)
+            var identity = CLILoggingIdentity(data: messageData!)
 
             if let device = config.deviceAliases?.first(where: { $0.identifier == identity.deviceID }),
                let alias = device.alias {
@@ -156,13 +150,25 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
                 identity.rename(to: alias)
             }
 
-            if let handler = foundIncomingIdentity, !handler(identity) {
-                DDLogVerbose("Disconnecting the socket \(sock)")
-                sock.delegate = nil
-                sock.disconnect()
+            var response: CLILoggingResponse!
+
+            if let handler = foundIncomingIdentity {
+                let result = handler(identity)
+                response = CLILoggingResponse(result.0, result.1)
             } else {
+                response = CLILoggingResponse(true, nil)
+            }
+
+            if response.accepted == true {
+                // Only the accepted sockets have identity.
                 sock.identity = identity
             }
+
+            var responseData = Data.MessageType.reject.data
+
+            responseData.append(response.bufferData)
+            responseData.append(Data.terminator)
+            sock.write(responseData, withTimeout: -1, tag: CLILoggingResponse.initialTag)
             break
 
         case .entity:
@@ -184,6 +190,20 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
             DDLogError("Found unexpected data message: \(data)")
             break
         }
+    }
+
+    func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
+        if (tag == CLILoggingResponse.initialTag) {
+            if sock.identity == nil {
+                DDLogVerbose("Disconnecting the socket \(sock)")
+                sock.delegate = nil
+                sock.disconnect()
+            }
+
+            return
+        }
+
+        DDLogVerbose("\(#function) Found unexpected writing data with tag: \(tag)")
     }
 }
 

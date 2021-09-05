@@ -95,13 +95,13 @@ struct App: ParsableCommand {
             if let deviceIDs = config.authorization?.blockDevices,
                !deviceIDs.isEmpty, deviceIDs.contains(identity.deviceID) {
                 DDLogVerbose("Blocke client [\(identity.hostName)] due to blocked device identifier!")
-                return false
+                return (false, config.authorization?.rejectMessage)
             }
 
             if let secrets = config.authorization?.secrets.filter({ $0.count > 0 }),
                 let secret = identity.secret, !secrets.isEmpty, !secrets.contains(secret) {
                 DDLogVerbose("Blocke client [\(identity.hostName)] due to missing valid secret!")
-                return false
+                return (false, config.authorization?.rejectMessage)
             }
 
             DDLogInfo("Welcome \(identity.hostName)!")
@@ -110,7 +110,7 @@ struct App: ParsableCommand {
                 DDLogError("\(error)")
             }
 
-            return true
+            return (true, nil)
         }
 
         service.foundIncomingMessage = { entity in

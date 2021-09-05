@@ -179,8 +179,9 @@ Otherwise you will [get this error](https://developer.apple.com/forums/thread/65
 
 - [x] Support to show client alias.
 - [ ] Support to save and pipe the logging message to local file and other process.
+  - [x] The full messages with verbose log level already save to predefined local file.
 - [x] Custom the log color by log level in the config file.
-- [ ] Send the `reject` message to client before disconnecting.
+- [x] Send the `reject` message to client before disconnecting.
 - [x] Support to highlight the specified keywords.
 
 

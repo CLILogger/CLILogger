@@ -20,12 +20,16 @@ public class CLILoggingEntity: NSObject {
     public var identity: CLILoggingIdentity!
     public var deviceName: String!
 
-    public private(set) var tag: Int = 0
-    private static var index: Int = 0
-
-    public static var tagOffset: Int {
+    static var initialTag: Int {
         100
     }
+
+    static var tagRange: Range<Int> {
+        initialTag..<(Int(INT_MAX - 1))
+    }
+
+    public internal(set) var tag: Int? = 0
+    private static var index: Int = 0
 
     fileprivate override init() {
         self.date = Date()
@@ -45,7 +49,7 @@ public class CLILoggingEntity: NSObject {
         self.filename = filename
         self.line = line
         self.function = function
-        self.tag = (Self.index + Self.tagOffset) % Int(INT_MAX - 1)
+        self.tag = (Self.index + Self.initialTag) % Int(INT_MAX - 1)
     }
 }
 

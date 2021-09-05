@@ -183,10 +183,12 @@ public struct Configuration {
     struct Authorization {
         var blockDevices: [String]
         var secrets: [String]
+        var rejectMessage: String?
 
         enum YAMLKey: String {
             case blockDevices = "block-devices"
             case secrets = "secrets"
+            case rejectMessage = "reject-message"
 
             var name: String {
                 return self.rawValue
@@ -196,6 +198,7 @@ public struct Configuration {
         init(_ dict: [String: Any?]) {
             blockDevices = dict[YAMLKey.blockDevices.name] as? [String] ?? []
             secrets = dict[YAMLKey.secrets.name] as? [String] ?? []
+            rejectMessage = dict[YAMLKey.rejectMessage.name] as? String
         }
     }
 
@@ -430,6 +433,8 @@ extension Configuration {
             # Leave a single empty string here to disable the checking.
             \(Authorization.YAMLKey.secrets.name):
                 - ""
+            # Message sent to client when rejecting.
+            \(Authorization.YAMLKey.rejectMessage.name): "It's not for you, Jen"
 
         # Device aliases:
         \(YAMLKey.deviceAliases.name):

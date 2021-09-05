@@ -13,14 +13,20 @@ import Foundation
     import UIKit
 #endif
 
-public struct CLILoggingIdentity {
+public struct CLILoggingIdentity: CLILoggingProtocol {
     public private(set) var hostName: String
     public private(set) var deviceID: String
     public private(set) var secret: String?
 
-    public static var tagNumber: Int {
+    static var initialTag: Int {
         0
     }
+
+    static var tagRange: Range<Int>{
+        0..<1
+    }
+
+    var tag: Int!
 
     public init() {
         #if os(macOS)
@@ -88,5 +94,56 @@ public struct CLILoggingIdentity {
 
     public mutating func rename(to newHostName: String) {
         hostName = newHostName
+    }
+}
+
+public struct CLILoggingResponse: CLILoggingProtocol {
+    public var accepted: Bool?
+    public var message: String?
+    public static var initialTag: Int {
+        1
+    }
+    
+    static var tagRange: Range<Int> {
+        1..<2
+    }
+
+    var tag: Int!
+
+    private enum JSONKey: String {
+        case accepted
+
+        var name: String {
+            get { self.rawValue }
+        }
+    }
+
+    public var bufferData: Data {
+        get {
+            let dict: [String: Any] = [
+                JSONKey.accepted.name : accepted ?? false
+            ]
+
+            let data = try! JSONSerialization.data(withJSONObject: dict, options: .fragmentsAllowed)
+            return data.base64EncodedData()
+        }
+    }
+
+    public init(_ accept: Bool, _ msg: String?) {
+        accepted = accept
+        message = msg
+    }
+
+    public init(data: Data) {
+        do {
+            let decodedData = Data(base64Encoded: data)!
+            let object = try JSONSerialization.jsonObject(with: decodedData, options: .fragmentsAllowed)
+            let dict = object as! [String: Any]
+
+            accepted = dict[JSONKey.accepted.name] as? Bool
+            // print(">>> Received response [\(hostName ?? "")]")
+        } catch {
+            print("Exception: \(error)")
+        }
     }
 }

@@ -38,3 +38,12 @@ public class CLILogger: NSObject, DDLogger {
         client.log(logMessage.message, flag: logMessage.flag, filename: logMessage.fileName, line: logMessage.line, function: logMessage.function)
     }
 }
+
+protocol CLILoggingProtocol {
+    static var initialTag: Int { get }
+    static var tagRange: Range<Int> { get }
+    var tag: Int! { get set }
+
+    var bufferData: Data { get }
+    init(data: Data)
+}
