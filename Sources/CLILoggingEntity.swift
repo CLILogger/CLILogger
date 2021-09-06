@@ -9,7 +9,7 @@ import Foundation
 import CocoaLumberjack
 
 @objcMembers
-public class CLILoggingEntity: NSObject {
+public class CLILoggingEntity: NSObject, CLILoggingProtocol {
     public private(set) var date: Date!
     public private(set) var flag: DDLogFlag!
     public private(set) var filename: String?
@@ -28,7 +28,7 @@ public class CLILoggingEntity: NSObject {
         initialTag..<(Int(INT_MAX - 1))
     }
 
-    public internal(set) var tag: Int? = 0
+    public private(set) var tag: Int? = 0
     private static var index: Int = 0
 
     fileprivate override init() {
@@ -51,9 +51,6 @@ public class CLILoggingEntity: NSObject {
         self.function = function
         self.tag = (Self.index + Self.initialTag) % Int(INT_MAX - 1)
     }
-}
-
-extension CLILoggingEntity {
 
     private enum JSONKey: String {
         case date
@@ -93,7 +90,7 @@ extension CLILoggingEntity {
         }
     }
 
-    public convenience init(data: Data) {
+    public required convenience init(data: Data) {
         self.init()
 
         do {

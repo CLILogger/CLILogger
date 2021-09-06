@@ -42,7 +42,6 @@ public class CLILogger: NSObject, DDLogger {
 protocol CLILoggingProtocol {
     static var initialTag: Int { get }
     static var tagRange: Range<Int> { get }
-    var tag: Int! { get set }
 
     var bufferData: Data { get }
     init(data: Data)

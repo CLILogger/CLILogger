@@ -26,8 +26,6 @@ public struct CLILoggingIdentity: CLILoggingProtocol {
         0..<1
     }
 
-    var tag: Int!
-
     public init() {
         #if os(macOS)
         hostName = Host.current().localizedName ?? "<unknown device>"
@@ -107,8 +105,6 @@ public struct CLILoggingResponse: CLILoggingProtocol {
     static var tagRange: Range<Int> {
         1..<2
     }
-
-    var tag: Int!
 
     private enum JSONKey: String {
         case accepted
