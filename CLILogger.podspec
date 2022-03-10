@@ -30,7 +30,7 @@ Pod::Spec.new do |spec|
 
   spec.source_files  = "Sources/**/*.swift"
 
-  spec.dependency "CocoaLumberjack", "~> 3.7.0"
+  spec.dependency "CocoaLumberjack/Swift", "~> 3.7.0"
   spec.dependency "CocoaAsyncSocket", "~> 7.6.5"
 
 end
