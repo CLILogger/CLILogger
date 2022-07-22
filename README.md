@@ -140,6 +140,26 @@ Try to discover the logging bonjour service via [Discovery for macOS](https://ap
 
 
 
+#### Communication
+
+```mermaid
+
+sequenceDiagram
+    autonumber
+    Note left of Client: Multiple clients.
+    Note right of Server: cli-logger
+    Client->>Client: Save all the pending messages to a queue.
+    Client->>Server: Hello?
+    Server->>Client: You are accepted!
+    Client->>Server: This is my first log message.
+    Server->>Client: Got it, you could continue to send a serial of messages.
+    Client->>Client: Removed the message from the pending queue.
+    Client->>Server: balabala...
+    Server->>Client: Got it, too.
+```
+
+
+
 #### Issues
 
 For iOS 14, bonjour service on local network is disabled by default, adding the following keys to your client app target’s `Info.plist` makes it available, again.
