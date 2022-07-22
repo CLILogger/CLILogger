@@ -28,7 +28,7 @@ public class CLILoggingEntity: NSObject, CLILoggingProtocol {
         initialTag..<(Int(INT_MAX - 1))
     }
 
-    public private(set) var tag: Int? = 0
+    public private(set) var tag: Int = 0
     private static var index: Int = 0
 
     fileprivate override init() {
@@ -59,6 +59,7 @@ public class CLILoggingEntity: NSObject, CLILoggingProtocol {
         case line
         case function
         case message
+        case tag
 
         var name: String {
             get { self.rawValue }
@@ -71,6 +72,7 @@ public class CLILoggingEntity: NSObject, CLILoggingProtocol {
                 JSONKey.date.name: date.timeIntervalSince1970,
                 JSONKey.flag.name: flag.rawValue,
                 JSONKey.message.name: message!,
+                JSONKey.tag.name: tag,
             ]
 
             if let filename = filename {
@@ -104,6 +106,7 @@ public class CLILoggingEntity: NSObject, CLILoggingProtocol {
             line = dict[JSONKey.line.name] as! UInt?
             function = dict[JSONKey.function.name] as! String?
             message = dict[JSONKey.message.name] as? String
+            tag = dict[JSONKey.tag.name] as! Int
 
             // print(">>> Received message [\(message ?? "")]")
         } catch {

@@ -19,7 +19,7 @@ func SetupInternalLogger() {
     }
 
     CLILoggingServiceInfo.logHandler = { level, message in
-        print("[\(level)]: \(message)")
+        // print("[\(level)]: \(message)")
     }
 }
 

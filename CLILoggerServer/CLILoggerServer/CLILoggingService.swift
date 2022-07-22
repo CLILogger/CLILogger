@@ -159,9 +159,9 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
 
             if let handler = foundIncomingIdentity {
                 let result = handler(identity)
-                response = CLILoggingResponse(result.0, result.1)
+                response = CLILoggingResponse(accept: result.0, message: result.1, type: .hello)
             } else {
-                response = CLILoggingResponse(true, nil)
+                response = CLILoggingResponse(accept: true, message: nil, type: .hello)
             }
 
             if response.accepted == true {
@@ -169,8 +169,7 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
                 sock.identity = identity
             }
 
-            sock.write(response.bufferData.wrap(as: .reject), withTimeout: -1, tag: CLILoggingResponse.initialTag)
-            break
+            sock.write(response.bufferData.wrap(as: .ack), withTimeout: -1, tag: CLILoggingResponse.initialTag)
 
         case .entity:
             let entity = CLILoggingEntity(data: messageData)
@@ -185,11 +184,12 @@ extension CLILoggingService: GCDAsyncSocketDelegate {
             if let handler = foundIncomingMessage {
                 handler(entity)
             }
-            break
+
+            let response = CLILoggingResponse(accept: true, message: nil, type: .entity, tag: entity.tag)
+            sock.write(response.bufferData.wrap(as: .ack), withTimeout: -1, tag: 0)
 
         default:
             DDLogError("Found unexpected data message: \(data)")
-            break
         }
     }
 

@@ -161,7 +161,7 @@ public class CLILoggingClient: NSObject {
 
         queueLocker.unlock()
 
-        socket.write(entity.bufferData.wrap(as: .entity), withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag!)
+        socket.write(entity.bufferData.wrap(as: .entity), withTimeout: CLILoggingServiceInfo.timeout, tag: entity.tag)
     }
 
     /// Reset the net service, index, addresses and socket.
@@ -339,64 +339,91 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
         }
 
         switch type {
-        case .reject:
+        case .ack:
             let response = CLILoggingResponse(data: messageData)
 
-            if let result = response.accepted, result == true {
-                log(.info, activity: "The socket identity get accepted!")
-                identityApproved = true
-            } else {
-                log(.warning, activity: "The socket identity get rejected! Message: \(response.message ?? "none")")
+            switch response.source {
+            case .hello:
+                if let result = response.accepted, result == true {
+                    log(.info, activity: "The socket identity get accepted!")
+                    identityApproved = true
+                } else {
+                    log(.warning, activity: "The socket identity get rejected! Message: \(response.message ?? "none")")
+                }
+            case .entity:
+                guard let tag = response.sourceTag else {
+                    log(.warning, activity: "Found empty response source tag!")
+                    break
+                }
+
+                assert(CLILoggingEntity.tagRange.contains(tag))
+
+                guard let index = pendingMessages.firstIndex(where: {$0.tag == tag}) else {
+                    log(.error, activity: "Miss the source entity, how?")
+                    break
+                }
+
+                queueLocker.lock()
+                pendingMessages.remove(at: index)
+                writing = false
+                queueLocker.unlock()
+
+                dispatchPendingMessages()
+            default:
+                DDLogError("Found unexpected response source: \(String(describing: response.source))")
             }
-            break
 
         default:
             DDLogError("Found unexpected data message: \(data)")
-            break
         }
     }
 
     public func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
         if CLILoggingIdentity.tagRange.contains(tag) {
-            // Sent the 'hello' message already, let's wait for server response.
+            // Sent the 'hello' message already, let's wait for server ack response.
             sock.readData(to: Data.terminator, withTimeout: -1, tag: CLILoggingResponse.initialTag)
             return
         }
 
-        guard CLILoggingEntity.tagRange.contains(tag), let index = pendingMessages.firstIndex(where: {$0.tag == tag}) else {
+        if CLILoggingEntity.tagRange.contains(tag) {
+            // Sent the 'entity' message already, wait for the server ack response.
+            if let entity = pendingMessages.first(where: {$0.tag == tag}) {
+                sock.readData(to: Data.terminator, withTimeout: -1, tag: entity.tag)
+            }
+
             return
         }
-
-        queueLocker.lock()
-        pendingMessages.remove(at: index)
-        writing = false
-        queueLocker.unlock()
-
-        dispatchPendingMessages()
     }
 }
+
+// MARK: - MessageType
+
+public enum MessageType : String, CaseIterable {
+    case hello = "HI"
+    case entity = "EN"
+    case ack = "AK"
+
+    public static var length: UInt8 {
+        2
+    }
+
+    public static func match(_ data: Data?) -> MessageType? {
+        MessageType.allCases.first { $0.data == data }
+    }
+
+    public static func match(_ value: String?) -> MessageType? {
+        MessageType.allCases.first { $0.rawValue == value }
+    }
+
+    public var data: Data {
+        self.rawValue.data(using: .utf8)!
+    }
+}
+
 
 // MARK: - Data
 
 public extension Data {
-
-    enum MessageType : String, CaseIterable {
-        case hello = "HI"
-        case reject = "RJ"
-        case entity = "EN"
-
-        public static var length: UInt8 {
-            2
-        }
-
-        public static func match(_ data: Data) -> MessageType? {
-            MessageType.allCases.first { $0.data == data }
-        }
-
-        public var data: Data {
-            self.rawValue.data(using: .utf8)!
-        }
-    }
 
     static var terminator: Data {
         get {
@@ -415,9 +442,9 @@ public extension Data {
     }
 
     func extract() -> (MessageType?, Data?) {
-        let typeEndIndex = self.startIndex + Int(Data.MessageType.length)
+        let typeEndIndex = self.startIndex + Int(MessageType.length)
         let typeData = self.subdata(in: 0..<typeEndIndex)
-        let type = Data.MessageType.match(typeData)
+        let type = MessageType.match(typeData)
 
         let endIndex = self.endIndex - Data.terminator.endIndex + 1
         let messageData = self.subdata(in: typeEndIndex..<self.index(before: endIndex))

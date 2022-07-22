@@ -98,16 +98,22 @@ public struct CLILoggingIdentity: CLILoggingProtocol {
 public struct CLILoggingResponse: CLILoggingProtocol {
     public var accepted: Bool?
     public var message: String?
+    public var source: MessageType?
+    public var sourceTag: Int?
+
     public static var initialTag: Int {
         1
     }
     
     static var tagRange: Range<Int> {
-        1..<2
+        initialTag..<(Int(INT_MAX - 1))
     }
 
     private enum JSONKey: String {
         case accepted
+        case message
+        case source
+        case sourceTag
 
         var name: String {
             get { self.rawValue }
@@ -117,7 +123,10 @@ public struct CLILoggingResponse: CLILoggingProtocol {
     public var bufferData: Data {
         get {
             let dict: [String: Any] = [
-                JSONKey.accepted.name : accepted ?? false
+                JSONKey.accepted.name : accepted ?? false,
+                JSONKey.message.name : message ?? "",
+                JSONKey.source.name : source?.rawValue ?? "",
+                JSONKey.sourceTag.name : sourceTag ?? 0,
             ]
 
             let data = try! JSONSerialization.data(withJSONObject: dict, options: .fragmentsAllowed)
@@ -125,9 +134,11 @@ public struct CLILoggingResponse: CLILoggingProtocol {
         }
     }
 
-    public init(_ accept: Bool, _ msg: String?) {
+    public init(accept: Bool, message msg: String?, type: MessageType?, tag: Int? = nil) {
         accepted = accept
         message = msg
+        source = type
+        sourceTag = tag
     }
 
     public init(data: Data) {
@@ -137,7 +148,9 @@ public struct CLILoggingResponse: CLILoggingProtocol {
             let dict = object as! [String: Any]
 
             accepted = dict[JSONKey.accepted.name] as? Bool
-            // print(">>> Received response [\(hostName ?? "")]")
+            message = dict[JSONKey.message.name] as? String
+            source = MessageType.match(dict[JSONKey.source.name] as? String)
+            sourceTag = dict[JSONKey.sourceTag.name] as? Int
         } catch {
             print("Exception: \(error)")
         }
