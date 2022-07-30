@@ -148,12 +148,12 @@ sequenceDiagram
     autonumber
     Note left of Client: Multiple clients.
     Note right of Server: cli-logger
-    Client->>Client: Save all the pending messages to a queue.
+    Client-->Client: Save all the pending messages to a queue.
     Client->>Server: Hello?
     Server->>Client: You are accepted!
     Client->>Server: This is my first log message.
     Server->>Client: Got it, you could continue to send a serial of messages.
-    Client->>Client: Removed the message from the pending queue.
+    Client-->Client: Removed the message from the pending queue.
     Client->>Server: balabala...
     Server->>Client: Got it, too.
 ```
