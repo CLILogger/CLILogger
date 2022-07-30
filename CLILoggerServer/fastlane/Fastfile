@@ -39,7 +39,7 @@ platform :mac do
       multi_line_end_keyword: "EOF"
     )
     commit = last_git_commit
-    File.write("../build/changelog", "#{changelog}\n\nCommit: #{commit[:commit_hash]}\n")
+    File.write("./build/changelog", "#{changelog}\n\nCommit: #{commit[:commit_hash]}\n")
   end
 
   desc "Upload the existing release build to github release page."
