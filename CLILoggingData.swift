@@ -1,21 +1,19 @@
 //
-//  CLILoggingEntity.swift
+//  CLILoggingData.swift
 //  CLILogger
 //
-//  Created by WeiHan on 2021/3/7.
+//  Created by WeiHan on 2024/8/18.
 //
 
 import Foundation
 import CocoaLumberjack
 
 @objcMembers
-public class CLILoggingEntity: NSObject, CLILoggingProtocol {
+public class CLILoggingData: NSObject, CLILoggingProtocol {
     public private(set) var date: Date!
-    public private(set) var flag: DDLogFlag!
+    public private(set) var data: Data?
     public private(set) var filename: String?
-    public private(set) var line: UInt?
-    public private(set) var function: String?
-    public private(set) var message: String!
+    public private(set) var fileExtension: String?
 
     public var identity: CLILoggingIdentity!
     public var deviceName: String!
@@ -37,7 +35,6 @@ public class CLILoggingEntity: NSObject, CLILoggingProtocol {
 
     fileprivate override init() {
         self.date = Date()
-        self.flag = .verbose
 
         super.init()
     }
@@ -48,22 +45,16 @@ public class CLILoggingEntity: NSObject, CLILoggingProtocol {
             Self.index += 1
         }
 
-        self.message = message
-        self.flag = flag
         self.filename = filename
-        self.line = line
-        self.function = function
         self.tag = (Self.index + Self.initialTag) % Int(INT_MAX - 1)
     }
 
     private enum JSONKey: String {
         case date
-        case flag
         case filename
-        case line
-        case function
-        case message
+        case fileExtension
         case tag
+        case data
 
         var name: String {
             get { self.rawValue }
@@ -74,21 +65,19 @@ public class CLILoggingEntity: NSObject, CLILoggingProtocol {
         get {
             var dict: [String: Any] = [
                 JSONKey.date.name: date.timeIntervalSince1970,
-                JSONKey.flag.name: flag.rawValue,
-                JSONKey.message.name: message!,
                 JSONKey.tag.name: tag,
             ]
-
+            
             if let filename = filename {
                 dict[JSONKey.filename.name] = filename
             }
-
-            if let line = line {
-                dict[JSONKey.line.name] = line
+            
+            if let fileExtension = fileExtension {
+                dict[JSONKey.fileExtension.name] = fileExtension
             }
-
-            if let function = function {
-                dict[JSONKey.function.name] = function
+            
+            if let data = data {
+                dict[JSONKey.data.name] = data
             }
 
             let data = try! JSONSerialization.data(withJSONObject: dict, options: .fragmentsAllowed)
@@ -104,13 +93,11 @@ public class CLILoggingEntity: NSObject, CLILoggingProtocol {
             let object = try JSONSerialization.jsonObject(with: decodedData, options: .fragmentsAllowed)
             let dict = object as! [String: Any]
 
-            date = Date(timeIntervalSince1970: dict[JSONKey.date.name] as! TimeInterval)
-            flag = DDLogFlag(rawValue: dict[JSONKey.flag.name] as! UInt)
-            filename = dict[JSONKey.filename.name] as! String?
-            line = dict[JSONKey.line.name] as! UInt?
-            function = dict[JSONKey.function.name] as! String?
-            message = dict[JSONKey.message.name] as? String
-            tag = dict[JSONKey.tag.name] as! Int
+            date = Date(timeIntervalSince1970: dict[JSONKey.date.name] as? TimeInterval ?? 0)
+            filename = dict[JSONKey.filename.name] as? String
+            fileExtension = dict[JSONKey.fileExtension.name] as? String
+            self.data = dict[JSONKey.data.name] as? Data
+            tag = dict[JSONKey.tag.name] as? Int ?? 0
 
             // print(">>> Received message [\(message ?? "")]")
         } catch {

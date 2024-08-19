@@ -25,6 +25,16 @@ public struct CLILoggingIdentity: CLILoggingProtocol {
     static var tagRange: Range<Int>{
         0..<1
     }
+    
+    var tag: Int {
+        get {
+            return Self.initialTag
+        }
+    }
+    
+    var isValid: Bool {
+        return Self.tagRange.contains(tag)
+    }
 
     public init() {
         #if os(macOS)
@@ -98,8 +108,8 @@ public struct CLILoggingIdentity: CLILoggingProtocol {
 public struct CLILoggingResponse: CLILoggingProtocol {
     public var accepted: Bool?
     public var message: String?
-    public var source: MessageType?
-    public var sourceTag: Int?
+    public var type: MessageType?
+    public var tag: Int
 
     public static var initialTag: Int {
         1
@@ -108,12 +118,16 @@ public struct CLILoggingResponse: CLILoggingProtocol {
     static var tagRange: Range<Int> {
         initialTag..<(Int(INT_MAX - 1))
     }
+    
+    var isValid: Bool {
+        return Self.tagRange.contains(tag)
+    }
 
     private enum JSONKey: String {
         case accepted
         case message
         case source
-        case sourceTag
+        case tag
 
         var name: String {
             get { self.rawValue }
@@ -125,8 +139,8 @@ public struct CLILoggingResponse: CLILoggingProtocol {
             let dict: [String: Any] = [
                 JSONKey.accepted.name : accepted ?? false,
                 JSONKey.message.name : message ?? "",
-                JSONKey.source.name : source?.rawValue ?? "",
-                JSONKey.sourceTag.name : sourceTag ?? 0,
+                JSONKey.source.name : type?.rawValue ?? "",
+                JSONKey.tag.name : tag,
             ]
 
             let data = try! JSONSerialization.data(withJSONObject: dict, options: .fragmentsAllowed)
@@ -134,25 +148,21 @@ public struct CLILoggingResponse: CLILoggingProtocol {
         }
     }
 
-    public init(accept: Bool, message msg: String?, type: MessageType?, tag: Int? = nil) {
+    public init(accept: Bool, message msg: String?, type typeValue: MessageType?, tag tagValue: Int? = nil) {
         accepted = accept
         message = msg
-        source = type
-        sourceTag = tag
+        type = typeValue
+        tag = tagValue ?? 0
     }
 
     public init(data: Data) {
-        do {
-            let decodedData = Data(base64Encoded: data)!
-            let object = try JSONSerialization.jsonObject(with: decodedData, options: .fragmentsAllowed)
-            let dict = object as! [String: Any]
+        let decodedData = Data(base64Encoded: data)!
+        let object = try? JSONSerialization.jsonObject(with: decodedData, options: .fragmentsAllowed)
+        let dict = object as? [String: Any]
 
-            accepted = dict[JSONKey.accepted.name] as? Bool
-            message = dict[JSONKey.message.name] as? String
-            source = MessageType.match(dict[JSONKey.source.name] as? String)
-            sourceTag = dict[JSONKey.sourceTag.name] as? Int
-        } catch {
-            print("Exception: \(error)")
-        }
+        accepted = dict?[JSONKey.accepted.name] as? Bool
+        message = dict?[JSONKey.message.name] as? String
+        type = MessageType.match(dict?[JSONKey.source.name] as? String)
+        tag = dict?[JSONKey.tag.name] as? Int ?? 0
     }
 }

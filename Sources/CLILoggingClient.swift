@@ -60,7 +60,7 @@ public class CLILoggingClient: NSObject {
             }
         }
     }
-    private var pendingMessages: [CLILoggingEntity] = []
+    private var pendingMessages: [CLILoggingProtocol] = []
     private var queueLocker: NSRecursiveLock = .init()
     private var dataQueue = DispatchQueue(label: "clilogger.client.serial.data.queue")
 
@@ -342,7 +342,7 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
         case .ack:
             let response = CLILoggingResponse(data: messageData)
 
-            switch response.source {
+            switch response.type {
             case .hello:
                 if let result = response.accepted, result == true {
                     log(.info, activity: "The socket identity get accepted!")
@@ -351,12 +351,10 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
                     log(.warning, activity: "The socket identity get rejected! Message: \(response.message ?? "none")")
                 }
             case .entity:
-                guard let tag = response.sourceTag else {
-                    log(.warning, activity: "Found empty response source tag!")
+                guard response.isValid else {
+                    log(.warning, activity: "Found invalid response!")
                     break
                 }
-
-                assert(CLILoggingEntity.tagRange.contains(tag))
 
                 guard let index = pendingMessages.firstIndex(where: {$0.tag == tag}) else {
                     log(.error, activity: "Miss the source entity, how?")
@@ -369,8 +367,14 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
                 queueLocker.unlock()
 
                 dispatchPendingMessages()
+            case .file:
+                break
+            case .image:
+                break
+            case .data:
+                break
             default:
-                DDLogError("Found unexpected response source: \(String(describing: response.source))")
+                DDLogError("Found unexpected response source: \(String(describing: response.type))")
             }
 
         default:
@@ -384,7 +388,7 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
             sock.readData(to: Data.terminator, withTimeout: -1, tag: CLILoggingResponse.initialTag)
             return
         }
-
+        
         if CLILoggingEntity.tagRange.contains(tag) {
             // Sent the 'entity' message already, wait for the server ack response.
             if let entity = pendingMessages.first(where: {$0.tag == tag}) {
@@ -399,9 +403,12 @@ extension CLILoggingClient: GCDAsyncSocketDelegate {
 // MARK: - MessageType
 
 public enum MessageType : String, CaseIterable {
-    case hello = "HI"
-    case entity = "EN"
-    case ack = "AK"
+    case hello = "HI"       // client -> server, shake hand
+    case entity = "EN"      // client -> server, log entity
+    case file = "FL"        // client -> server, file data
+    case image = "IG"       // client -> server, image data
+    case data = "DT"        // client -> server, raw data
+    case ack = "AK"         // server -> client, response
 
     public static var length: UInt8 {
         2
