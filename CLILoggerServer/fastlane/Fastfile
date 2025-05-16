@@ -28,7 +28,7 @@ platform :mac do
       scheme: "CLILoggerServer",
       silent: true,
       clean: true,
-      output_directory: "./build/",
+      output_directory: "./build/Release",
       output_name: "cli-logger",
     )
 

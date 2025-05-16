@@ -97,6 +97,7 @@
 				685A921C25F5199B002C6102 /* Sources */,
 				685A921D25F5199B002C6102 /* Frameworks */,
 				685A921E25F5199B002C6102 /* CopyFiles */,
+				681AD8572DD73A47008FD16E /* [Debug] Create Symbolic Link for Product */,
 			);
 			buildRules = (
 			);
@@ -165,6 +166,24 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		681AD8572DD73A47008FD16E /* [Debug] Create Symbolic Link for Product */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Debug] Create Symbolic Link for Product";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ \"$CONFIGURATION\" != \"Debug\" ]]; then\n    echo \"Skip to copy for release product!\"\n    exit 0\nfi\n\nTARGET_DIR=\"$SRCROOT/build\"\nrm -fr \"$TARGET_DIR/\"\nmkdir -p \"$TARGET_DIR\"\n\nln -s \"$CODESIGNING_FOLDER_PATH\" \"$TARGET_DIR/$FULL_PRODUCT_NAME\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
