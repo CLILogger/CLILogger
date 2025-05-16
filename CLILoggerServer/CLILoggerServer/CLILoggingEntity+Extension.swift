@@ -215,19 +215,29 @@ extension CLILoggingEntity {
             colorRanges[message.startIndex..<message.endIndex] = style
         }
 
-        colorRanges.merge(config.highlightColorStyleFor(message: message)) { cs1, cs2 in cs1 }
+        let debugMessage: String? = nil
+
+        let highlightCS = config.highlightColorStyleFor(message: message)
+        colorRanges.merge(highlightCS) { cs1, cs2 in cs2 }
         colorRanges = rearrange_ranges(colorRanges) as! [Range<String.Index>: Configuration.ColorStyle]
 
-        // print("Source: [\(message)]")
+        if message == debugMessage {
+            print("Source: [\(message)]")
+        }
 
         for range in colorRanges.keys.sorted(by: { $0.lowerBound < $1.lowerBound }) {
             if let colorStyle = colorRanges[range] {
                 result += colorStyle.apply(to: String(message[range]))
-                // print("     Match: [\(String(message[range]))], colorful: [\(colorStyle.apply(to: String(message[range])))], range: \(range.lowerBound.utf16Offset(in: message)):\(range.upperBound.utf16Offset(in: message))")
+
+                if message == debugMessage {
+                    print("     Match: [\(String(message[range]))], colorful: [\(colorStyle.apply(to: String(message[range])))], range: \(range.lowerBound.utf16Offset(in: message)):\(range.upperBound.utf16Offset(in: message))")
+                }
             }
         }
 
-        // print("Result: [\(result)]")
+        if message == debugMessage {
+            print("Result: [\(result)]")
+        }
         return result
     }
 
