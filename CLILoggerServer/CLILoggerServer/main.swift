@@ -139,10 +139,8 @@ struct App: ParsableCommand {
             switch config.deviceShowOption {
             case .never:
                 name = ""
-                break
             case .automatic:
                 name = service!.connectedSocketCount <= 1 ? "" : name
-                break
             case .always:
                 break
             }

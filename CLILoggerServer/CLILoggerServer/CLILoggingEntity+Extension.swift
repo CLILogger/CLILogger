@@ -171,36 +171,21 @@ extension CLILoggingEntity {
         switch formatterKey {
         case .time:
             replacedValue = (config.formatter!.timeFormatter ?? Self.defaultTimeFormatter).string(from: date)
-            break
-
         case .flag:
             replacedValue = flag!.title.name.padding(toLength: 7, withPad: " ", startingAt: 0)
-            break
-
         case .filename:
             replacedValue = filename ?? ""
-            break
-
         case .line:
             replacedValue = (line != nil) ? "\(line!)" : ""
-            break
-
         case .function:
             replacedValue = function ?? ""
-            break
-
         case .message:
             replacedValue = message
-            break
-
         case .device:
             // Append a empty space to the ending of device name to separate it from other format units.
             replacedValue = "\(deviceName!) "
-            break
-
         case .none:
             replacedValue = value
-            break
         }
 
         let colorStyle = config.colorStyleFor(formatterKey?.name, with: flag)

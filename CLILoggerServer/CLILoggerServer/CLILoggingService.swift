@@ -36,7 +36,7 @@ class CLILoggingService: NSObject {
 
     public override init() {
         super.init()
-        self.asyncSocket = GCDAsyncSocket(delegate: self, delegateQueue: DispatchQueue.main)
+        self.asyncSocket = GCDAsyncSocket(delegate: self, delegateQueue: .main)
 
         setupTimer()
     }
