@@ -61,6 +61,46 @@ func TryLevelMessageLoop() {
     }
 }
 
+func TryInteractiveMessageLoop() {
+    DDLog.add(CLILogger.shared)
+    
+    print("Enter log messages in format: 'LEVEL message text here'")
+    print("Available levels: ERROR, WARNING, INFO, DEBUG, VERBOSE")
+
+    DispatchQueue(label: "user").async {
+        while true {
+            print("> ", terminator: "")
+            guard let input = readLine(), !input.isEmpty else {
+                continue
+            }
+
+            let components = input.components(separatedBy: " ")
+            guard components.count >= 2 else {
+                print("Invalid input format. Please use: 'LEVEL message text here'")
+                continue
+            }
+
+            let level = components[0].uppercased()
+            let message = components.dropFirst().joined(separator: " ")
+
+            switch level.uppercased() {
+            case "ERROR":
+                DDLogError(message, asynchronous: false)
+            case "WARN":
+                DDLogWarn(message, asynchronous: false)
+            case "INFO":
+                DDLogInfo(message, asynchronous: false)
+            case "DEBUG":
+                DDLogDebug(message, asynchronous: false)
+            case "VERBOSE":
+                DDLogVerbose(message, asynchronous: false)
+            default:
+                print("Invalid input format. Please use: 'LEVEL message text here'")
+            }
+        }
+    }
+}
+
 SetupInternalLogger()
 
 switch CommandLine.arguments.last {
@@ -68,6 +108,8 @@ case "level":
     TryLevelMessage()
 case "loop":
     TryLevelMessageLoop()
+case "interactive":
+    TryInteractiveMessageLoop()
 default:
     TrySimpleHello()
 }
