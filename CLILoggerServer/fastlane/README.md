@@ -15,10 +15,10 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## Mac
 
-### mac release
+### mac build
 
 ```sh
-[bundle exec] fastlane mac release
+[bundle exec] fastlane mac build
 ```
 
 Build a release executable file.
