@@ -51,7 +51,7 @@ platform :mac do
       tag_name: Time.new.strftime("%Y.%m.%d"),
       description: description,
       commitish: "master",
-      upload_assets: ["./build/cli-logger"]
+      upload_assets: ["./build/Release/cli-logger"]
     )
 
     notification(subtitle: "Finished Uploading", message: "", open: "https://github.com/CLILogger/CLILogger/releases")
