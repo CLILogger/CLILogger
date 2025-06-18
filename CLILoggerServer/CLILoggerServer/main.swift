@@ -126,6 +126,10 @@ struct App: ParsableCommand {
                 return
             }
 
+            if !config.blockKeywords.filter({ entity.message.contains($0) }).isEmpty {
+                return
+            }
+
             entity.output(by: config)
         }
 

@@ -253,6 +253,8 @@ public struct Configuration {
     public fileprivate(set) var logLevel: DDLogLevel = .verbose
     public fileprivate(set) var modules: [Module] = []
 
+    public fileprivate(set) var blockKeywords: [String] = []
+
     public fileprivate(set) var serviceName: String?
     public fileprivate(set) var servicePort: UInt16?
 
@@ -277,6 +279,7 @@ public struct Configuration {
         case highlights = "highlights"
         case whitelistModules = "whitelist-modules"
         case blocklistModules = "blocklist-modules"
+        case blocklistKeywords = "blocklist-keywords"
         case authorization = "authorization"
         case deviceAliases = "device-aliases"
         case showDevice = "show-device"
@@ -422,6 +425,10 @@ extension Configuration {
         # Module blocklist:
         \(YAMLKey.blocklistModules.name):
             - \(String(describing: CLILoggingService.self))
+
+        # Keyword blocklist:
+        \(YAMLKey.blocklistKeywords.name):
+            - 
 
         # Authorization settings:
         \(YAMLKey.authorization.name):
@@ -589,12 +596,14 @@ extension Configuration {
 
             let whitelistModules: [Module] = (dict[YAMLKey.whitelistModules.name] as? [String])?.compactMap { Module(name: $0, mode: .whitelist) } ?? []
             let blocklistModules: [Module] = (dict[YAMLKey.blocklistModules.name] as? [String])?.compactMap { Module(name: $0, mode: .blocklist) } ?? []
+            let blocklistKeywords: [String] = dict[YAMLKey.blocklistKeywords.name] as? [String] ?? []
 
             serviceName = dict[YAMLKey.serviceName.name] as? String
             servicePort = UInt16(dict[YAMLKey.servicePort.name] as! Int)
             projectName = dict[YAMLKey.projectName.name] as? String
             logLevel = TitledLogFlag(rawValue: dict[YAMLKey.logLevel.name] as! String)!.ddlogLevel
             modules += whitelistModules + blocklistModules
+            blockKeywords = blocklistKeywords
 
             if let formatterDict = dict[YAMLKey.formatter.name] as? [String: Any?] {
                 formatter = Formatter(formatterDict)
@@ -703,6 +712,7 @@ extension Configuration {
     public mutating func applyChanges(from config: Configuration) {
         logLevel = config.logLevel
         modules = config.modules
+        blockKeywords = config.blockKeywords
         serviceName = config.serviceName
         servicePort = config.servicePort
         formatter = config.formatter
