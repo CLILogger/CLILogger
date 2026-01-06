@@ -30,10 +30,8 @@ OPTIONS:
 ##### Installation
 
 ```ruby
-pod 'CLILogger', :configurations => ['Debug'], :git => 'https://github.com/CLILogger/CLILogger', :branch => 'master'
+pod 'CLILogger', :configurations => ['Debug']
 ```
-
-> It still stays in alpha stage but it’s ready for common usages, I’ll be careful for `master`. :)
 
 
 
