@@ -42,13 +42,14 @@ platform :mac do
       multi_line_end_keyword: "EOF"
     )
     commit = last_git_commit
+    tag_name = sh("cat ../../.version").strip
     description = "#{changelog}\n\nCommit: #{commit[:commit_hash]}\n"
 
     github_release = set_github_release(
       repository_name: "CLILogger/CLILogger",
       api_token: ENV["GITHUB_TOKEN"],
       name: "CLILoggerServer(cli-logger)",
-      tag_name: Time.new.strftime("%Y.%m.%d"),
+      tag_name: tag_name,
       description: description,
       commitish: "master",
       upload_assets: ["./build/Release/cli-logger"]

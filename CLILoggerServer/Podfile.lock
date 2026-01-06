@@ -1,5 +1,5 @@
 PODS:
-  - CLILogger (0.1.0):
+  - CLILogger (0.2.0):
     - CocoaAsyncSocket (>= 7.6)
     - CocoaLumberjack/Swift (>= 3.7)
   - CocoaAsyncSocket (7.6.5)
@@ -25,7 +25,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  CLILogger: 1917d8a36c893e40291566b2847d2d2fa351e3f1
+  CLILogger: cbe63cd95b7f54f912822ad913f611e5a6c98e08
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CocoaLumberjack: e8955b9d337ac307103b0a34fd141c32f27e53c5
   RainbowSwift: 08a7d1719e935c45c29be7990d9ce1747733f5a7

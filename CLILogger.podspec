@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |spec|
   spec.name         = "CLILogger"
-  spec.version      = "0.1.0"
+  spec.version      = `cat .version`
   spec.summary      = "Send app log to tcp bonjour service."
   spec.description  = <<-DESC
   Like NSLogger, CLILogger display and extends the custom log message in your prefer terminal.
