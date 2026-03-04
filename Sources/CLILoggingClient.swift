@@ -7,7 +7,7 @@
 
 import Foundation
 import CocoaAsyncSocket
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 #if os(macOS)
     #if canImport(AppKit) // macOS GUI application

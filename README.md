@@ -27,10 +27,18 @@ OPTIONS:
 
 ## Client
 
-##### Installation
+##### Installation via CocoaPods
 
 ```ruby
 pod 'CLILogger', :configurations => ['Debug']
+```
+
+##### Installation via Swift Package Manager
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/CLILogger/CLILogger", from: "0.2.1")
+]
 ```
 
 
