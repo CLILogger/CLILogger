@@ -7,7 +7,12 @@
 
 import Foundation
 import CocoaAsyncSocket
-import CocoaLumberjackSwift
+
+#if canImport(CocoaLumberjackSwift) // SPM
+    import CocoaLumberjackSwift
+#else // CocoaPods
+    import CocoaLumberjack
+#endif
 
 #if os(macOS)
     #if canImport(AppKit) // macOS GUI application
