@@ -74,6 +74,15 @@ class CLILoggingService: NSObject {
         }
     }
 
+    public func disconnect(deviceIDs: [String]) {
+        for socket in connectedSockets {
+            if let identity = socket.identity, deviceIDs.contains(identity.deviceID) {
+                DDLogInfo("Disconnecting blocked device: \(identity.hostName)[\(identity.deviceID)]")
+                socket.disconnect()
+            }
+        }
+    }
+
     private func setupTimer() {
         timer = DispatchSource.makeTimerSource(queue: dataQueue)
 

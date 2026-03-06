@@ -77,6 +77,10 @@ struct App: ParsableCommand {
                 return
             }
 
+            if let blockedDevices = newConfig.authorization?.blockDevices, !blockedDevices.isEmpty {
+                service.disconnect(deviceIDs: blockedDevices)
+            }
+
             config.applyChanges(from: newConfig)
             DDLogInfo("Reloaded latest configuration changes!")
             DDLogVerbose("Note that new changes only affect the log level and module settings")
